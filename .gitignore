@@ -1,0 +1,7 @@
+bin
+obj
+UploadFolder
+release
+appsettings.json
+appsettings.Development.json
+Image
