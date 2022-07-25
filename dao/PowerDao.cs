@@ -1,0 +1,390 @@
+using backend.util;
+using Microsoft.Extensions.Options;
+using backend.Sqls.mysql;
+using System.Collections;
+using MySqlConnector;
+using System;
+using backend.Models.Power;
+using System.Linq;
+using backend.ViewModels.Power;
+using System.Collections.Generic;
+
+namespace backend.dao
+{
+
+    public class PowerDao
+    {
+        private readonly appSettings _appSettings;
+        private MysqlConnect _myqlconn;
+
+        public PowerDao(IOptions<appSettings> appSettings)
+        {
+            this._appSettings = appSettings.Value;
+            this._myqlconn = DBchoose.GetDBConnect(_appSettings, "db");
+        }
+
+        public ChargerModel GetQRCodeByKey(string Key)
+        {
+            string sql = @$"
+            SELECT
+            b.id,
+            b.name,
+            b.address,
+            d.name as chargersupplier_name,
+            e.name as chargerlocation_name,
+            e.address as chargerlocation_address,
+            ST_AsGeoJSON(e.geom) as chargerlocation_geom,
+            c.type as chargergun_type,
+            c.type_power as chargergun_type_power,
+            c.fee as chargergun_fee,
+            c.`name` as chargergun_name
+            FROM (
+                SELECT
+                charger_id,
+                chargergun_id
+                FROM `ChargerQRCode`
+                WHERE `key` = UUID_TO_BIN(@key)
+            ) a
+            JOIN `Charger` b
+            ON a.charger_id = b.id
+            JOIN `ChargerGun` c
+            ON a.chargergun_id = c.id
+            JOIN `ChargerSupplier` d
+            ON b.chargersupplier_id = d.id
+            JOIN `ChargerLocation` e
+            ON b.chargerlocation_id = e.id
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@key", new SQLParameter(Key, MySqlDbType.VarChar));
+            ChargerModel Result = _myqlconn.GetDataList<ChargerModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
+
+        public OrderModel GetChargerOrderNow(string Account)
+        {
+            string sql = @$"
+            SELECT
+            a.id,
+			a.account,
+			BIN_TO_UUID(a.car_id) as car_id,
+            REPLACE(a.charger_id, '\0', '') as charger_id,
+            REPLACE(a.chargergun_id, '\0', '') as chargergun_id,
+            a.status,
+            a.transaction_id,
+            a.createid,
+            a.createat,
+            a.updateid,
+            a.updateat,
+            b.plate as car_plate,
+            BIN_TO_UUID(b.vehiclestyle_id) as car_vehiclestyle_id,
+            c.brand as car_vehiclestyle_brand,
+            c.model as car_vehiclestyle_model,
+            d.name as charger_name,
+            d.address as charger_address,
+            BIN_TO_UUID(d.chargerlocation_id) as chargerlocation_id,
+            e.name as chargerlocation_name,
+            e.address as chargerlocation_address,
+            ST_AsGeoJSON(e.geom) as chargerlocation_geom,
+            f.type as chargergun_type,
+            f.type_power as chargergun_type_power,
+            f.fee as chargergun_fee,
+            f.name as chargergun_name,
+            f.address as chargergun_address,
+            BIN_TO_UUID(g.id) as chargersupplier_id,
+            g.name as chargersupplier_name
+            FROM (
+                SELECT
+                id,
+                account,
+                car_id,
+                charger_id,
+                chargergun_id,
+                status,
+                transaction_id,
+                createid,
+                createat,
+                updateid,
+                updateat
+                FROM `ChargerOrder`
+                WHERE account = @account
+                ORDER BY createat DESC
+                LIMIT 1
+            ) a
+            JOIN `Car` b
+            ON a.car_id = b.id
+            JOIN `CarVehicleStyle` c
+            ON b.vehiclestyle_id = c.id
+            JOIN `Charger` d
+            ON a.charger_id = d.id
+            JOIN `ChargerLocation` e
+            ON d.chargerlocation_id = e.id
+            JOIN `ChargerGun` f
+            ON a.chargergun_id = f.id
+            JOIN `ChargerSupplier` g
+            ON d.chargersupplier_id = g.id
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            OrderModel Result = _myqlconn.GetDataList<OrderModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
+
+        public ChargerInfoModel GetChargerOrderNowInfo(string ChargerId, string ChargerGunId, string Account)
+        {
+            string sql = @$"
+            SELECT
+            BIN_TO_UUID(id) as id,
+            charger_id,
+            chargergun_id,
+            trans_no,
+            charge_time,
+            charge_current,
+            charge_kw,
+            current_kw,
+            soc,
+            `time`
+            FROM `ChargerInfo`
+            WHERE charger_id = @charger_id AND chargergun_id = @chargergun_id
+            ORDER BY `time` DESC
+            LIMIT 1
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@charger_id", new SQLParameter(ChargerId, MySqlDbType.VarChar));
+            ht.Add("@chargergun_id", new SQLParameter(ChargerGunId, MySqlDbType.VarChar));
+            ChargerInfoModel Result = _myqlconn.GetDataList<ChargerInfoModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
+
+        public List<OrderModel> GetChargerOrder(int Page, int PageCount, bool Order, string Account)
+        {
+            string OrderStr = Order ? "DESC" : "ASC";
+            string sql = @$"
+            SELECT
+            a.id,
+			a.account,
+			BIN_TO_UUID(a.car_id) as car_id,
+            REPLACE(a.charger_id, '\0', '') as charger_id,
+            REPLACE(a.chargergun_id, '\0', '') as chargergun_id,
+            a.status,
+            a.transaction_id,
+            a.createid,
+            a.createat,
+            a.updateid,
+            a.updateat,
+            b.plate as car_plate,
+            BIN_TO_UUID(b.vehiclestyle_id) as car_vehiclestyle_id,
+            c.brand as car_vehiclestyle_brand,
+            c.model as car_vehiclestyle_model,
+            d.name as charger_name,
+            d.address as charger_address,
+            BIN_TO_UUID(d.chargerlocation_id) as chargerlocation_id,
+            e.name as chargerlocation_name,
+            e.address as chargerlocation_address,
+            ST_AsGeoJSON(e.geom) as chargerlocation_geom,
+            f.type as chargergun_type,
+            f.type_power as chargergun_type_power,
+            f.fee as chargergun_fee,
+            f.name as chargergun_name,
+            f.address as chargergun_address,
+            BIN_TO_UUID(g.id) as chargersupplier_id,
+            g.name as chargersupplier_name
+            FROM (
+                SELECT
+                id,
+                account,
+                car_id,
+                charger_id,
+                chargergun_id,
+                status,
+                transaction_id,
+                createid,
+                createat,
+                updateid,
+                updateat
+                FROM `ChargerOrder`
+                WHERE account = @account
+                ORDER BY createat {OrderStr}
+                LIMIT {(Page - 1) * PageCount}, {(Page) * PageCount}
+            ) a
+            JOIN `Car` b
+            ON a.car_id = b.id
+            JOIN `CarVehicleStyle` c
+            ON b.vehiclestyle_id = c.id
+            JOIN `Charger` d
+            ON a.charger_id = d.id
+            JOIN `ChargerLocation` e
+            ON d.chargerlocation_id = e.id
+            JOIN `ChargerGun` f
+            ON a.chargergun_id = f.id
+            JOIN `ChargerSupplier` g
+            ON d.chargersupplier_id = g.id
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            List<OrderModel> Result = _myqlconn.GetDataList<OrderModel>(sql, ht);
+            return Result;
+        }
+
+        public PageModel GetChargerOrderCount(string Account)
+        {
+            string sql = @$"
+            SELECT
+            COUNT(id) as page_count
+            FROM (
+                SELECT
+                id,
+                account,
+                car_id,
+                charger_id,
+                chargergun_id,
+                status,
+                transaction_id,
+                createid,
+                createat,
+                updateid,
+                updateat
+                FROM `ChargerOrder`
+                WHERE account = @account
+            ) a
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            PageModel Result = _myqlconn.GetDataList<PageModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
+
+        public int PostChargerTransaction(string OrderId, string Account)
+        {
+            string sql = @$"
+            INSERT INTO `ChargerTransaction`
+            (
+                order_id,
+                createid,
+                createat,
+                updateid,
+                updateat
+            ) VALUES (
+                @order_id,
+                @account,
+                NOW(),
+                @account,
+                NOW()
+            )
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@order_id", new SQLParameter(OrderId, MySqlDbType.VarChar));
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            int id = _myqlconn.ExecuteReturnId(sql, ht);
+            return id;
+        }
+
+        public void PostChargerOrder(string OrderId, string CarId, string Key, int TransNo, string Account)
+        {
+            string sql = @$"
+            INSERT INTO `ChargerOrder` (
+                id,
+                account,
+                car_id,
+                charger_id,
+                chargergun_id,
+                status,
+                transaction_id,
+                createid,
+                createat,
+                updateid,
+                updateat
+            ) VALUES (
+                @order_id,
+                @account,
+                UUID_TO_BIN(@car_id),
+                (
+                    SELECT
+                    charger_id
+                    FROM `ChargerQRCode`
+                    WHERE `key` = UUID_TO_BIN(@key)
+                    LIMIT 1
+                ),
+                (
+                    SELECT
+                    chargergun_id
+                    FROM `ChargerQRCode`
+                    WHERE `key` = UUID_TO_BIN(@key)
+                    LIMIT 1
+                ),
+                0,
+                @transaction_id,
+                @account,
+                NOW(),
+                @account,
+                NOW()
+            );
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@order_id", new SQLParameter(OrderId, MySqlDbType.VarChar));
+            ht.Add("@transaction_id", new SQLParameter(TransNo, MySqlDbType.Int32));
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            ht.Add("@car_id", new SQLParameter(CarId, MySqlDbType.VarChar));
+            ht.Add("@key", new SQLParameter(Key, MySqlDbType.VarChar));
+            _myqlconn.Execute(sql, ht);
+        }
+
+        public void PostChargerOrderFinish(string ChargeId, string ChargerGunId, int TransNo)
+        {
+            string sql = @$"
+            UPDATE `ChargeOrder`
+            SET status = 1
+            WHERE charger_id = @charger_id AND chargergun_id = @chargergun_id AND transaction_id = @transaction_id AND status = 0
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@charger_id", new SQLParameter(ChargeId, MySqlDbType.VarChar));
+            ht.Add("@chargergun_id", new SQLParameter(ChargerGunId, MySqlDbType.VarChar));
+            ht.Add("@transaction_id", new SQLParameter(TransNo, MySqlDbType.Int32));
+            _myqlconn.Execute(sql, ht);
+        }
+
+        public ChargerPostModel GetChargerPostByKey(string Key, string Account)
+        {
+            string sql = @$"
+            SELECT
+            charger_id as station_id,
+            chargergun_id as charger_id,
+            (
+                SELECT transaction_id as trans_no FROM `ChargerOrder` WHERE account = @account AND status = 0 LIMIT 1
+            ) as trans_no
+            FROM `ChargerQRCode`
+            WHERE key = UUID_TO_BIN(@key)
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            ht.Add("@key", new SQLParameter(Key, MySqlDbType.VarChar));
+            ChargerPostModel Result = _myqlconn.GetDataList<ChargerPostModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
+
+        public void CancelChargerOrder(string Account)
+        {
+            string sql = @$"
+            UPDATE `ChargerOrder`
+            SET status = -1
+            WHERE account = @account AND status = 0
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            _myqlconn.Execute(sql, ht);
+        }
+
+        // public void PostGunStatus(string ChargerId, string ChargerGunId, string Account)
+        // {
+        //     string sql = @$"
+        //     UPDATE `ChargerGun` 
+        //     SET
+        //         status = 1
+        //     WHERE id = @chargergun_id AND charger_id = @charger_id
+        //     ";
+        //     Hashtable ht = new Hashtable();
+        //     ht.Add("@charger_id", new SQLParameter(ChargerId, MySqlDbType.VarChar));
+        //     ht.Add("@chargergun_id", new SQLParameter(ChargerGunId, MySqlDbType.VarChar));
+        //     _myqlconn.Execute(sql, ht);
+        // }
+    }
+}

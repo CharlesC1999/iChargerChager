@@ -50,10 +50,12 @@ namespace backend
 
             #region api
             // Service
-            // services.AddScoped<Services.AuthService>();
+            services.AddScoped<Services.PowerService>();
             // Dao
-            // services.AddScoped<dao.UserDao>();
+            services.AddScoped<dao.PowerDao>();
             #endregion
+
+            services.AddHttpClient();
 
             services.AddControllers()
                 .AddJsonOptions(options =>
@@ -62,6 +64,9 @@ namespace backend
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "backend", Version = "v1" });
+                var basePath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+                var xmlPath = Path.Combine(basePath, "backend.xml");
+                c.IncludeXmlComments(xmlPath);
             });
             services.AddMvc();
             services.AddSingleton<FileExtensionContentTypeProvider>();
