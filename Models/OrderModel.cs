@@ -13,7 +13,6 @@ namespace backend.Models.Power
         public string charger_id { get; set; }
         public string chargergun_id { get; set; }
         public int status { get; set; }
-        public int transaction_id { get; set; }
         public string createid { get; set; }
         public DateTime createat { get; set; }
         public string updateid { get; set; }
