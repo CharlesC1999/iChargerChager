@@ -179,6 +179,10 @@ namespace backend.Services
                 model.Key,
                 Account
             );
+            _PowerDao.PostChargerInfo(
+                model.Key,
+                OrderId
+            );
             return OrderId;
         }
 
@@ -191,6 +195,42 @@ namespace backend.Services
                 model.TransNo
             );
             return true;
+        }
+
+        public async Task<bool> PostChargerOrderFinishManual(int TransNo, string Account)
+        {
+            OrderModel Data = _PowerDao.GetChargerOrderNow(Account);
+            if (Data.id == TransNo && Data.status == 0)
+            {
+                // await PostChargerEnd(new ChargerPostModel()
+                // {
+                //     station_id = Data.charger_id,
+                //     charger_id = Data.chargergun_id
+                // });
+            }
+            return true;
+        }
+
+        public async Task PostChargerEnd(ChargerPostModel Data)
+        {
+            if (Data is null) throw new Exception("無法結束充電槍");
+            if (Data.trans_no is null) throw new Exception("無法結束充電槍");
+
+            var url = "https://gochabar.japaneast.cloudapp.azure.com/etgapi/api/ev_stop";
+            var client = _clientFactory.CreateClient();
+            var body = new StringContent(
+                System.Text.Json.JsonSerializer.Serialize(Data),
+                Encoding.UTF8,
+                Application.Json);
+            var response = await client.PostAsync(url, body);
+            if (response.IsSuccessStatusCode)
+            {
+                var responseStream = await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                throw new Exception("無法啟動充電槍");
+            }
         }
 
         public async Task PostCharger(string Key, string Account)

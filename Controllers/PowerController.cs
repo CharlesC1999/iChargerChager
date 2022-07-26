@@ -232,7 +232,8 @@ namespace backend.Controllers.Power
                 {
                     isSuccess = true,
                     message = "充電槍啟動成功",
-                    Result = new {
+                    Result = new
+                    {
                         OrderId = Result,
                     },
                 });
@@ -302,6 +303,47 @@ namespace backend.Controllers.Power
                     isSuccess = true,
                     message = "充電槍啟動成功",
                     Result = null,
+                });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new ResultViewModel<string>
+                {
+                    isSuccess = false,
+                    message = e.Message.ToString(),
+                    Result = null,
+                });
+            }
+        }
+
+        /// <summary>
+        /// 使用者自行結束充電
+        /// </summary>
+        /// <returns>
+        /// </returns>
+        [HttpPost]
+        [Route("Finish/Manual")]
+        public async Task<IActionResult> PostChargerOrderFinishManual([FromQuery] int TransNo)
+        {
+            try
+            {
+                if (this._AccountNumber == "")
+                {
+                    return Unauthorized(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "登入期限已過期，請重新登入！",
+                        Result = null,
+                    });
+                }
+
+                return Ok(new ResultViewModel<bool>
+                {
+                    isSuccess = true,
+                    message = "結束充電成功",
+                    Result = await _service.PostChargerOrderFinishManual(
+                        TransNo,
+                        _AccountNumber),
                 });
             }
             catch (Exception e)

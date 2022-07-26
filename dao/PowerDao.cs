@@ -320,6 +320,57 @@ namespace backend.dao
             return Id;
         }
 
+        public void PostChargerInfo(string Key, int TransNo)
+        {
+            string sql = @$"
+            INSERT INTO `ChargerInfo` (
+                charger_id,
+                chargergun_id,
+                trans_no,
+                charge_time,
+                charge_current,
+                charge_voltage,
+                charge_kw,
+                current_kw,
+                soc,
+                time
+            ) VALUES (
+                (
+                    SELECT
+                    charger_id
+                    FROM `ChargerQRCode`
+                    WHERE `key` = UUID_TO_BIN(@key)
+                    LIMIT 1
+                ),
+                (
+                    SELECT
+                    chargergun_id
+                    FROM `ChargerQRCode`
+                    WHERE `key` = UUID_TO_BIN(@key)
+                    LIMIT 1
+                ),
+                @trans_no,
+                @charge_time,
+                @charge_current,
+                @charge_voltage,
+                @charge_kw,
+                @current_kw,
+                @soc,
+                NOW()
+            );
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@trans_no", new SQLParameter(TransNo, MySqlDbType.Int32));
+            ht.Add("@key", new SQLParameter(Key, MySqlDbType.VarChar));
+            ht.Add("@charge_time", new SQLParameter(10, MySqlDbType.Int32));
+            ht.Add("@charge_current", new SQLParameter("50", MySqlDbType.VarChar));
+            ht.Add("@charge_voltage", new SQLParameter("50", MySqlDbType.VarChar));
+            ht.Add("@charge_kw", new SQLParameter("50", MySqlDbType.VarChar));
+            ht.Add("@current_kw", new SQLParameter("50", MySqlDbType.VarChar));
+            ht.Add("@soc", new SQLParameter("50", MySqlDbType.VarChar));
+            _myqlconn.Execute(sql, ht);
+        }
+
         public void PostChargerOrderFinish(string ChargeId, string ChargerGunId, int TransNo)
         {
             string sql = @$"
