@@ -152,16 +152,15 @@ namespace backend.Services
             return Result;
         }
 
-        public ChargerInfoViewModel GetChargerOrderNowInfo(string ChargerId, string ChargerGunId, string Account)
+        public ChargerInfoViewModel GetChargerOrderNowInfo(int TransNo, string Account)
         {
             ChargerInfoViewModel Result = new ChargerInfoViewModel();
-            ChargerInfoModel Data = _PowerDao.GetChargerOrderNowInfo(ChargerId, ChargerGunId, Account);
+            ChargerInfoModel Data = _PowerDao.GetChargerOrderNowInfo(TransNo, Account);
             Result = Data is null ? null : new ChargerInfoViewModel()
             {
                 id = Data.id,
                 charger_id = Data.charger_id,
                 chargergun_id = Data.chargergun_id,
-                trans_no = Data.trans_no,
                 charge_time = Data.charge_time,
                 charge_current = Data.charge_current,
                 charge_kw = Data.charge_kw,
@@ -172,19 +171,15 @@ namespace backend.Services
             return Result;
         }
 
-        public bool PostChargerOrder(PowerPostModel model, string Account)
+        public int PostChargerOrder(PowerPostModel model, string Account)
         {
             // 新增訂單
-            string OrderId = DateTime.Now.ToString("yyyyMMddHHmmssffff");
-            int TransNo = _PowerDao.PostChargerTransaction(OrderId, Account);
-            _PowerDao.PostChargerOrder(
-                OrderId,
+            int OrderId = _PowerDao.PostChargerOrder(
                 model.CarId,
                 model.Key,
-                TransNo,
                 Account
             );
-            return true;
+            return OrderId;
         }
 
         public bool PostChargerOrderFinish(PowerFinishPostModel model)

@@ -7,7 +7,7 @@ namespace backend.ViewModels.Power
 {
     public class OrderViewModel
     {
-        public string id { get; set; }
+        public int id { get; set; }
         public string account { get; set; }
         public string car_id { get; set; }
         public CarViewModel car { get; set; }

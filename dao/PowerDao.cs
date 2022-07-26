@@ -129,14 +129,13 @@ namespace backend.dao
             return Result;
         }
 
-        public ChargerInfoModel GetChargerOrderNowInfo(string ChargerId, string ChargerGunId, string Account)
+        public ChargerInfoModel GetChargerOrderNowInfo(int TransNo, string Account)
         {
             string sql = @$"
             SELECT
             BIN_TO_UUID(id) as id,
             charger_id,
             chargergun_id,
-            trans_no,
             charge_time,
             charge_current,
             charge_kw,
@@ -144,13 +143,12 @@ namespace backend.dao
             soc,
             `time`
             FROM `ChargerInfo`
-            WHERE charger_id = @charger_id AND chargergun_id = @chargergun_id
+            WHERE trans_no = @trans_no
             ORDER BY `time` DESC
             LIMIT 1
             ";
             Hashtable ht = new Hashtable();
-            ht.Add("@charger_id", new SQLParameter(ChargerId, MySqlDbType.VarChar));
-            ht.Add("@chargergun_id", new SQLParameter(ChargerGunId, MySqlDbType.VarChar));
+            ht.Add("@trans_no", new SQLParameter(TransNo, MySqlDbType.Int32));
             ChargerInfoModel Result = _myqlconn.GetDataList<ChargerInfoModel>(sql, ht).FirstOrDefault();
             return Result;
         }
@@ -196,7 +194,6 @@ namespace backend.dao
                 charger_id,
                 chargergun_id,
                 status,
-                transaction_id,
                 createid,
                 createat,
                 updateid,
@@ -278,23 +275,20 @@ namespace backend.dao
             return id;
         }
 
-        public void PostChargerOrder(string OrderId, string CarId, string Key, int TransNo, string Account)
+        public int PostChargerOrder(string CarId, string Key, string Account)
         {
             string sql = @$"
             INSERT INTO `ChargerOrder` (
-                id,
                 account,
                 car_id,
                 charger_id,
                 chargergun_id,
                 status,
-                transaction_id,
                 createid,
                 createat,
                 updateid,
                 updateat
             ) VALUES (
-                @order_id,
                 @account,
                 UUID_TO_BIN(@car_id),
                 (
@@ -312,7 +306,6 @@ namespace backend.dao
                     LIMIT 1
                 ),
                 0,
-                @transaction_id,
                 @account,
                 NOW(),
                 @account,
@@ -320,12 +313,11 @@ namespace backend.dao
             );
             ";
             Hashtable ht = new Hashtable();
-            ht.Add("@order_id", new SQLParameter(OrderId, MySqlDbType.VarChar));
-            ht.Add("@transaction_id", new SQLParameter(TransNo, MySqlDbType.Int32));
             ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
             ht.Add("@car_id", new SQLParameter(CarId, MySqlDbType.VarChar));
             ht.Add("@key", new SQLParameter(Key, MySqlDbType.VarChar));
-            _myqlconn.Execute(sql, ht);
+            int Id = _myqlconn.ExecuteReturnId(sql, ht);
+            return Id;
         }
 
         public void PostChargerOrderFinish(string ChargeId, string ChargerGunId, int TransNo)
@@ -333,7 +325,7 @@ namespace backend.dao
             string sql = @$"
             UPDATE `ChargeOrder`
             SET status = 1
-            WHERE charger_id = @charger_id AND chargergun_id = @chargergun_id AND transaction_id = @transaction_id AND status = 0
+            WHERE charger_id = @charger_id AND chargergun_id = @chargergun_id AND id = @transaction_id AND status = 0
             ";
             Hashtable ht = new Hashtable();
             ht.Add("@charger_id", new SQLParameter(ChargeId, MySqlDbType.VarChar));

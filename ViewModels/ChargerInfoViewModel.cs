@@ -10,7 +10,6 @@ namespace backend.ViewModels.Power
         public string id { get; set; }
         public string charger_id { get; set; }
         public string chargergun_id { get; set; }
-        public string trans_no { get; set; }
         public int charge_time { get; set; }
         public int charge_current { get; set; }
         public int charge_kw { get; set; }
