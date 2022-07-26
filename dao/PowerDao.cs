@@ -70,7 +70,6 @@ namespace backend.dao
             REPLACE(a.charger_id, '\0', '') as charger_id,
             REPLACE(a.chargergun_id, '\0', '') as chargergun_id,
             a.status,
-            a.transaction_id,
             a.createid,
             a.createat,
             a.updateid,
@@ -100,7 +99,6 @@ namespace backend.dao
                 charger_id,
                 chargergun_id,
                 status,
-                transaction_id,
                 createid,
                 createat,
                 updateid,
@@ -164,7 +162,6 @@ namespace backend.dao
             REPLACE(a.charger_id, '\0', '') as charger_id,
             REPLACE(a.chargergun_id, '\0', '') as chargergun_id,
             a.status,
-            a.transaction_id,
             a.createid,
             a.createat,
             a.updateid,
@@ -235,7 +232,6 @@ namespace backend.dao
                 charger_id,
                 chargergun_id,
                 status,
-                transaction_id,
                 createid,
                 createat,
                 updateid,
@@ -374,7 +370,7 @@ namespace backend.dao
         public void PostChargerOrderFinish(string ChargeId, string ChargerGunId, int TransNo)
         {
             string sql = @$"
-            UPDATE `ChargeOrder`
+            UPDATE `ChargerOrder`
             SET status = 1
             WHERE charger_id = @charger_id AND chargergun_id = @chargergun_id AND id = @transaction_id AND status = 0
             ";
@@ -392,7 +388,7 @@ namespace backend.dao
             charger_id as station_id,
             chargergun_id as charger_id,
             (
-                SELECT transaction_id as trans_no FROM `ChargerOrder` WHERE account = @account AND status = 0 LIMIT 1
+                SELECT id as trans_no FROM `ChargerOrder` WHERE account = @account AND status = 0 LIMIT 1
             ) as trans_no
             FROM `ChargerQRCode`
             WHERE key = UUID_TO_BIN(@key)
