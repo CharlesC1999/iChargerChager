@@ -359,11 +359,11 @@ namespace backend.dao
             ht.Add("@trans_no", new SQLParameter(TransNo, MySqlDbType.Int32));
             ht.Add("@key", new SQLParameter(Key, MySqlDbType.VarChar));
             ht.Add("@charge_time", new SQLParameter(10, MySqlDbType.Int32));
-            ht.Add("@charge_current", new SQLParameter("50", MySqlDbType.VarChar));
-            ht.Add("@charge_voltage", new SQLParameter("50", MySqlDbType.VarChar));
-            ht.Add("@charge_kw", new SQLParameter("50", MySqlDbType.VarChar));
-            ht.Add("@current_kw", new SQLParameter("50", MySqlDbType.VarChar));
-            ht.Add("@soc", new SQLParameter("50", MySqlDbType.VarChar));
+            ht.Add("@charge_current", new SQLParameter("0", MySqlDbType.VarChar));
+            ht.Add("@charge_voltage", new SQLParameter("0", MySqlDbType.VarChar));
+            ht.Add("@charge_kw", new SQLParameter("0", MySqlDbType.VarChar));
+            ht.Add("@current_kw", new SQLParameter("0", MySqlDbType.VarChar));
+            ht.Add("@soc", new SQLParameter("0", MySqlDbType.VarChar));
             _myqlconn.Execute(sql, ht);
         }
 
@@ -391,7 +391,7 @@ namespace backend.dao
                 SELECT id as trans_no FROM `ChargerOrder` WHERE account = @account AND status = 0 LIMIT 1
             ) as trans_no
             FROM `ChargerQRCode`
-            WHERE key = UUID_TO_BIN(@key)
+            WHERE `key` = UUID_TO_BIN(@key)
             ";
             Hashtable ht = new Hashtable();
             ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));

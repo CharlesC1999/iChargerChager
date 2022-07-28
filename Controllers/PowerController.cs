@@ -224,7 +224,7 @@ namespace backend.Controllers.Power
                     });
                 }
                 // 建立訂單
-                int Result = _service.PostChargerOrder(
+                int Result = await _service.PostChargerOrder(
                     model,
                     _AccountNumber
                 );

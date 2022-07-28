@@ -169,7 +169,7 @@ namespace backend.Services
             return Result;
         }
 
-        public int PostChargerOrder(PowerPostModel model, string Account)
+        public async Task<int> PostChargerOrder(PowerPostModel model, string Account)
         {
             // 新增訂單
             int OrderId = _PowerDao.PostChargerOrder(
@@ -181,6 +181,9 @@ namespace backend.Services
                 model.Key,
                 OrderId
             );
+
+            await PostChargerStart(model.Key, Account);
+
             return OrderId;
         }
 
@@ -200,11 +203,11 @@ namespace backend.Services
             OrderModel Data = _PowerDao.GetChargerOrderNow(Account);
             if (Data.id == TransNo && Data.status == 0)
             {
-                // await PostChargerEnd(new ChargerPostModel()
-                // {
-                //     station_id = Data.charger_id,
-                //     charger_id = Data.chargergun_id
-                // });
+                await PostChargerEnd(new ChargerPostModel()
+                {
+                    station_id = Data.charger_id,
+                    charger_id = Data.chargergun_id
+                });
             }
             return true;
         }
@@ -231,7 +234,7 @@ namespace backend.Services
             }
         }
 
-        public async Task PostCharger(string Key, string Account)
+        public async Task PostChargerStart(string Key, string Account)
         {
             ChargerPostModel Data = _PowerDao.GetChargerPostByKey(Key, Account);
             if (Data is null) throw new Exception("無法啟動充電槍");
