@@ -199,20 +199,6 @@ namespace backend.Services
             return true;
         }
 
-        public async Task<bool> PostChargerOrderFinishManual(int TransNo, string Account)
-        {
-            OrderModel Data = _PowerDao.GetChargerOrderNow(Account);
-            if (Data.id == TransNo && Data.status == 0)
-            {
-                await PostChargerEnd(new ChargerPostModel()
-                {
-                    station_id = Data.charger_id,
-                    charger_id = Data.chargergun_id
-                });
-            }
-            return true;
-        }
-
         public async Task PostChargerEnd(ChargerPostModel Data)
         {
             if (Data is null) throw new Exception("無法結束充電槍");
