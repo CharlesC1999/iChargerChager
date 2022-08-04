@@ -212,6 +212,7 @@ namespace backend.Controllers.Power
         [HttpPost]
         public async Task<IActionResult> PostChargerOrder([FromBody] PowerPostModel model)
         {
+            int OrderId = 0;
             try
             {
                 if (this._AccountNumber == "")
@@ -224,19 +225,10 @@ namespace backend.Controllers.Power
                     });
                 }
                 // 建立訂單
-                int Result = await _service.PostChargerOrder(
+                OrderId = await _service.PostChargerOrder(
                     model,
                     _AccountNumber
                 );
-                return Ok(new ResultViewModel<object>
-                {
-                    isSuccess = true,
-                    message = "充電槍啟動成功",
-                    Result = new
-                    {
-                        OrderId = Result,
-                    },
-                });
             }
             catch (Exception e)
             {
@@ -248,21 +240,30 @@ namespace backend.Controllers.Power
                 });
             }
 
-            // try
-            // {
-            //     // 啟動充電槍
-            //     // await _service.PostCharger(model.Key, _AccountNumber);
-            // }
-            // catch (Exception e)
-            // {
-            //     _service.CancelChargerOrder(_AccountNumber);
-            //     return BadRequest(new ResultViewModel<string>
-            //     {
-            //         isSuccess = false,
-            //         message = "充電槍啟動失敗",
-            //         Result = null,
-            //     });
-            // }
+            try
+            {
+                // 啟動充電槍
+                await _service.PostChargerStart(model.Key, _AccountNumber);
+                return Ok(new ResultViewModel<object>
+                {
+                    isSuccess = true,
+                    message = "充電槍啟動成功",
+                    Result = new
+                    {
+                        OrderId = OrderId,
+                    },
+                });
+            }
+            catch (Exception e)
+            {
+                _service.CancelChargerOrder(_AccountNumber);
+                return BadRequest(new ResultViewModel<string>
+                {
+                    isSuccess = false,
+                    message = "充電槍啟動失敗",
+                    Result = null,
+                });
+            }
         }
 
         /// <summary>

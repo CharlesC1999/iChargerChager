@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using backend.dao;
@@ -182,7 +183,7 @@ namespace backend.Services
                 OrderId
             );
 
-            await PostChargerStart(model.Key, Account);
+            // await PostChargerStart(model.Key, Account);
 
             return OrderId;
         }
@@ -215,10 +216,12 @@ namespace backend.Services
         public async Task PostChargerEnd(ChargerPostModel Data)
         {
             if (Data is null) throw new Exception("無法結束充電槍");
-            if (Data.trans_no is null) throw new Exception("無法結束充電槍");
+            if (Data.trans_no == 0) throw new Exception("無法結束充電槍");
 
             var url = "https://gochabar.japaneast.cloudapp.azure.com/etgapi/api/ev_stop";
             var client = _clientFactory.CreateClient();
+            string authValue = "HDREAPIKEY";
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authValue);
             var body = new StringContent(
                 System.Text.Json.JsonSerializer.Serialize(Data),
                 Encoding.UTF8,
@@ -238,10 +241,12 @@ namespace backend.Services
         {
             ChargerPostModel Data = _PowerDao.GetChargerPostByKey(Key, Account);
             if (Data is null) throw new Exception("無法啟動充電槍");
-            if (Data.trans_no is null) throw new Exception("無法啟動充電槍");
+            if (Data.trans_no == 0) throw new Exception("無法啟動充電槍");
 
             var url = "https://gochabar.japaneast.cloudapp.azure.com/etgapi/api/ev_start";
             var client = _clientFactory.CreateClient();
+            string authValue = "HDREAPIKEY";
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authValue);
             var body = new StringContent(
                 System.Text.Json.JsonSerializer.Serialize(Data),
                 Encoding.UTF8,
