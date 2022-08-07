@@ -94,63 +94,6 @@ namespace backend.Services
             return Result;
         }
 
-        public OrderListViewModel GetChargerOrder(int Page, int PageCount, bool Order, string Account)
-        {
-            OrderListViewModel Result = new OrderListViewModel();
-            List<OrderModel> DataList = _PowerDao.GetChargerOrder(Page, PageCount, Order, Account);
-
-            var pageinfo = _PowerDao.GetChargerOrderCount(Account);
-            pageinfo.now_page = Page;
-            var pagemax = (int)Math.Ceiling(pageinfo.page_count / (decimal)PageCount);
-            pageinfo.max_page = pagemax == 0 ? 1 : pagemax;
-
-            Result.list = DataList.Select(Data => new OrderViewModel()
-            {
-                id = Data.id,
-                account = Data.account,
-                car_id = Data.car_id,
-                car = new CarViewModel()
-                {
-                    id = Data.car_id,
-                    plate = Data.car_plate,
-                    vehiclestyle_id = Data.car_vehiclestyle_id,
-                    vehiclestyle = new CarVehicleStyleViewModel()
-                    {
-                        id = Data.car_vehiclestyle_id,
-                        brand = Data.car_vehiclestyle_brand,
-                        model = Data.car_vehiclestyle_model,
-                    }
-                },
-                charger_id = Data.charger_id,
-                charger = new ChargerViewModel
-                {
-                    id = Data.charger_id,
-                    name = Data.charger_name,
-                    address = Data.charger_address,
-                    chargersupplier_name = Data.chargersupplier_name,
-                    chargerlocation_name = Data.chargerlocation_name,
-                    chargerlocation_address = Data.chargerlocation_address,
-                    chargerlocation_geom = JsonConvert.DeserializeObject<GeometryModel>(Data.chargerlocation_geom),
-                    chargergun_type = Data.chargergun_type,
-                    chargergun_type_power = Data.chargergun_type_power,
-                    chargergun_fee = Data.chargergun_fee,
-                    chargergun_name = Data.chargergun_name,
-                },
-                status = Data.status,
-                createid = Data.createid,
-                createat = Data.createat,
-                updateid = Data.updateid,
-                updateat = Data.updateat,
-            }).ToList();
-            Result.pageinfo = new PageViewModel
-            {
-                page_count = pageinfo.page_count,
-                now_page = pageinfo.now_page,
-                max_page = pageinfo.max_page
-            };
-            return Result;
-        }
-
         public ChargerInfoViewModel GetChargerOrderNowInfo(int TransNo, string Account)
         {
             ChargerInfoViewModel Result = new ChargerInfoViewModel();
