@@ -125,9 +125,6 @@ namespace backend.Services
                 model.Key,
                 OrderId
             );
-
-            // await PostChargerStart(model.Key, Account);
-
             return OrderId;
         }
 
@@ -147,7 +144,7 @@ namespace backend.Services
             if (Data is null) throw new Exception("無法結束充電槍");
             if (Data.trans_no == 0) throw new Exception("無法結束充電槍");
 
-            var url = "https://gochabar.japaneast.cloudapp.azure.com/etgapi/api/ev_stop";
+            var url = "https://www.gochabar.com/etgapi/api/ev_stop";
             var client = _clientFactory.CreateClient();
             string authValue = "HDREAPIKEY";
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authValue);
@@ -159,10 +156,15 @@ namespace backend.Services
             if (response.IsSuccessStatusCode)
             {
                 var responseStream = await response.Content.ReadAsStringAsync();
+                var responseObject = System.Text.Json.JsonSerializer.Deserialize<ChargerResponseViewModel>(responseStream);
+                if (responseObject.resmsg != "success")
+                {
+                    throw new Exception("無法結束充電槍");
+                }
             }
             else
             {
-                throw new Exception("無法啟動充電槍");
+                throw new Exception("無法結束充電槍");
             }
         }
 
@@ -172,7 +174,7 @@ namespace backend.Services
             if (Data is null) throw new Exception("無法啟動充電槍");
             if (Data.trans_no == 0) throw new Exception("無法啟動充電槍");
 
-            var url = "https://gochabar.japaneast.cloudapp.azure.com/etgapi/api/ev_start";
+            var url = "https://www.gochabar.com/etgapi/api/ev_start";
             var client = _clientFactory.CreateClient();
             string authValue = "HDREAPIKEY";
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authValue);
@@ -184,11 +186,21 @@ namespace backend.Services
             if (response.IsSuccessStatusCode)
             {
                 var responseStream = await response.Content.ReadAsStringAsync();
+                var responseObject = System.Text.Json.JsonSerializer.Deserialize<ChargerResponseViewModel>(responseStream);
+                if (responseObject.resmsg != "success")
+                {
+                    throw new Exception("無法啟動充電槍");
+                }
             }
             else
             {
                 throw new Exception("無法啟動充電槍");
             }
+        }
+
+        public void UpdateChargerOrderStatus(int OrderId, int Status, string Account)
+        {
+            _PowerDao.UpdateChargerOrderStatus(OrderId, Status, Account);
         }
 
         public void CancelChargerOrder(string Account)

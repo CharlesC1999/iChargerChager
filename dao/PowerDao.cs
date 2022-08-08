@@ -276,7 +276,7 @@ namespace backend.dao
         {
             string sql = @$"
             UPDATE `ChargerOrder`
-            SET status = 1
+            SET status = 2
             WHERE charger_id = @charger_id AND chargergun_id = @chargergun_id AND id = @transaction_id AND status = 0
             ";
             Hashtable ht = new Hashtable();
@@ -317,18 +317,18 @@ namespace backend.dao
             _myqlconn.Execute(sql, ht);
         }
 
-        // public void PostGunStatus(string ChargerId, string ChargerGunId, string Account)
-        // {
-        //     string sql = @$"
-        //     UPDATE `ChargerGun` 
-        //     SET
-        //         status = 1
-        //     WHERE id = @chargergun_id AND charger_id = @charger_id
-        //     ";
-        //     Hashtable ht = new Hashtable();
-        //     ht.Add("@charger_id", new SQLParameter(ChargerId, MySqlDbType.VarChar));
-        //     ht.Add("@chargergun_id", new SQLParameter(ChargerGunId, MySqlDbType.VarChar));
-        //     _myqlconn.Execute(sql, ht);
-        // }
+        public void UpdateChargerOrderStatus(int OrderId, int Status, string Account)
+        {
+            string sql = @$"
+            UPDATE `ChargerOrder`
+            SET status = @status, updateid = @account, updateat = NOW()
+            WHERE id = @order_id
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@order_id", new SQLParameter(OrderId, MySqlDbType.Int16));
+            ht.Add("@status", new SQLParameter(Status, MySqlDbType.Int16));
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            _myqlconn.Execute(sql, ht);
+        }
     }
 }
