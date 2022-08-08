@@ -38,45 +38,6 @@ namespace backend.Controllers.Power
         }
 
         /// <summary>
-        /// 使用者掃描QRCODE回傳充電樁資訊
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("QRCode")]
-        public IActionResult GetQRCodeByKey([FromQuery] string Key)
-        {
-            try
-            {
-                if (this._AccountNumber == "")
-                {
-                    return Unauthorized(new ResultViewModel<string>
-                    {
-                        isSuccess = false,
-                        message = "登入期限已過期，請重新登入！",
-                        Result = null,
-                    });
-                }
-
-                var Result = _service.GetQRCodeByKey(Key);
-                return Ok(new ResultViewModel<ChargerViewModel>
-                {
-                    isSuccess = true,
-                    message = "充電成功",
-                    Result = Result,
-                });
-            }
-            catch (Exception e)
-            {
-                return BadRequest(new ResultViewModel<string>
-                {
-                    isSuccess = false,
-                    message = e.Message.ToString(),
-                    Result = null,
-                });
-            }
-        }
-
-        /// <summary>
         /// 取得目前使用者充電電量資訊(SOCKET)
         /// </summary>
         /// <returns></returns>
