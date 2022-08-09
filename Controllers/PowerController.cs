@@ -115,7 +115,7 @@ namespace backend.Controllers.Power
             try
             {
                 // 啟動充電槍
-                await _service.PostChargerStart(model.Key, _AccountNumber);
+                // await _service.PostChargerStart(model.Key, _AccountNumber);
 
                 // 改變狀態為目前充電中
                 _service.UpdateChargerOrderStatus(OrderId, 1, _AccountNumber);
