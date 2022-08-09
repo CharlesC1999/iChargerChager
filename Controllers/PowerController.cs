@@ -144,25 +144,47 @@ namespace backend.Controllers.Power
         }
 
         /// <summary>
+        /// 使用者開始充電(SOCKET)
+        /// </summary>
+        /// <returns>
+        /// </returns>
+        [HttpGet]
+        [Route("Start")]
+        public IActionResult GetChargerOrderStartSocket([FromQuery] int TransNo)
+        {
+            try
+            {
+                // 開始充電訂單
+                _service.UpdateChargerOrderStatus(TransNo, 1, _AccountNumber);
+                return Ok(new ResultViewModel<string>
+                {
+                    isSuccess = true,
+                    message = "結束充電成功",
+                    Result = null,
+                });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new ResultViewModel<string>
+                {
+                    isSuccess = false,
+                    message = e.Message.ToString(),
+                    Result = null,
+                });
+            }
+        }
+
+        /// <summary>
         /// 使用者結單(SOCKET)
         /// </summary>
         /// <returns>
         /// </returns>
-        [HttpPost]
+        [HttpGet]
         [Route("Finish")]
-        public IActionResult PostChargerOrderFinishSocket([FromQuery] int TransNo)
+        public IActionResult GetChargerOrderFinishSocket([FromQuery] int TransNo)
         {
             try
             {
-                if (this._AccountNumber == "")
-                {
-                    return Unauthorized(new ResultViewModel<string>
-                    {
-                        isSuccess = false,
-                        message = "登入期限已過期，請重新登入！",
-                        Result = null,
-                    });
-                }
                 // 結束訂單
                 _service.UpdateChargerOrderStatus(TransNo, 2, _AccountNumber);
                 return Ok(new ResultViewModel<string>
