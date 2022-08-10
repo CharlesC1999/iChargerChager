@@ -77,6 +77,35 @@ namespace backend.Controllers.Power
         }
 
         /// <summary>
+        /// 取得目前使用者充電狀態(SOCKET)
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("Now/Status")]
+        public IActionResult GetChargerOrderNowStatus([FromQuery] int TransNo)
+        {
+            try
+            {
+                var Result = _service.GetChargerOrderNowStatus(TransNo);
+                return Ok(new ResultViewModel<ChargerStatusViewModel>
+                {
+                    isSuccess = true,
+                    message = "取得成功",
+                    Result = Result,
+                });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new ResultViewModel<string>
+                {
+                    isSuccess = false,
+                    message = e.Message.ToString(),
+                    Result = null,
+                });
+            }
+        }
+
+        /// <summary>
         /// 使用者建立訂單
         /// </summary>
         /// <returns>

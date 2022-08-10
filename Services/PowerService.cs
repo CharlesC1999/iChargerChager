@@ -105,9 +105,27 @@ namespace backend.Services
                 chargergun_id = Data.chargergun_id,
                 charge_time = Data.charge_time,
                 charge_current = Data.charge_current,
+                charge_voltage = Data.charge_voltage,
                 charge_kw = Data.charge_kw,
                 current_kw = Data.current_kw,
                 soc = Data.soc,
+                time = Data.time,
+                trans_no = TransNo,
+            };
+            return Result;
+        }
+
+        public ChargerStatusViewModel GetChargerOrderNowStatus(int TransNo)
+        {
+            ChargerStatusViewModel Result = new ChargerStatusViewModel();
+            ChargerStatusModel Data = _PowerDao.GetChargerOrderNowStatus(TransNo);
+            Result = Data is null ? null : new ChargerStatusViewModel()
+            {
+                charger_id = Data.charger_id,
+                chargergun_id = Data.chargergun_id,
+                trans_no = Data.trans_no,
+                vendor_error_code = Data.vendor_error_code,
+                status = Data.status,
                 time = Data.time,
             };
             return Result;

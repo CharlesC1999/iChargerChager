@@ -12,6 +12,7 @@ namespace backend.Models.Power
         public string chargergun_id { get; set; }
         public int charge_time { get; set; }
         public int charge_current { get; set; }
+        public int charge_voltage { get; set; }
         public int charge_kw { get; set; }
         public int current_kw { get; set; }
         public string soc { get; set; }

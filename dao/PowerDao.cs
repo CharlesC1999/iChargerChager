@@ -136,6 +136,7 @@ namespace backend.dao
             chargergun_id,
             charge_time,
             charge_current,
+            charge_voltage,
             charge_kw,
             current_kw,
             soc,
@@ -148,6 +149,27 @@ namespace backend.dao
             Hashtable ht = new Hashtable();
             ht.Add("@trans_no", new SQLParameter(TransNo, MySqlDbType.Int32));
             ChargerInfoModel Result = _myqlconn.GetDataList<ChargerInfoModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
+
+        public ChargerStatusModel GetChargerOrderNowStatus(int TransNo)
+        {
+            string sql = @$"
+            SELECT
+            charger_id,
+            chargergun_id,
+            trans_no,
+            vendor_error_code,
+            status,
+            `time`
+            FROM `ChargerStatus`
+            WHERE trans_no = @trans_no
+            ORDER BY `time` DESC
+            LIMIT 1
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@trans_no", new SQLParameter(TransNo, MySqlDbType.Int32));
+            ChargerStatusModel Result = _myqlconn.GetDataList<ChargerStatusModel>(sql, ht).FirstOrDefault();
             return Result;
         }
 
