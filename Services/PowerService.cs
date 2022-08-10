@@ -126,7 +126,7 @@ namespace backend.Services
                 trans_no = Data.trans_no,
                 vendor_error_code = Data.vendor_error_code,
                 status = Data.status,
-                time = Data.time,
+                time = Data.time.ToString("yyyy-MM-dd HH:mm:ss"),
             };
             return Result;
         }
