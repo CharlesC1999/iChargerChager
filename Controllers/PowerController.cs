@@ -87,11 +87,9 @@ namespace backend.Controllers.Power
             try
             {
                 var Result = _service.GetChargerOrderNowStatus(TransNo);
-                return Ok(new ResultViewModel<ChargerStatusViewModel>
+                return Ok(new
                 {
-                    isSuccess = true,
-                    message = "取得成功",
-                    Result = Result,
+                    payload = Result
                 });
             }
             catch (Exception e)
