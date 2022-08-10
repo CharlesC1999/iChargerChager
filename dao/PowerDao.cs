@@ -299,7 +299,7 @@ namespace backend.dao
             string sql = @$"
             UPDATE `ChargerOrder`
             SET status = 2
-            WHERE charger_id = @charger_id AND chargergun_id = @chargergun_id AND id = @transaction_id AND status = 0
+            WHERE charger_id = @charger_id AND chargergun_id = @chargergun_id AND id = @transaction_id
             ";
             Hashtable ht = new Hashtable();
             ht.Add("@charger_id", new SQLParameter(ChargeId, MySqlDbType.VarChar));
