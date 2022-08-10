@@ -154,6 +154,13 @@ namespace backend.Services
                 model.ChargerGunId,
                 model.TransNo
             );
+
+            // 測試-新增結單資訊
+            _PowerDao.PostChargerOrderFinishInfo(
+                model.ChargerId,
+                model.ChargerGunId,
+                model.TransNo
+            );
             return true;
         }
 

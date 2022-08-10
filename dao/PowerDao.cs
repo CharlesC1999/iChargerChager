@@ -308,6 +308,57 @@ namespace backend.dao
             _myqlconn.Execute(sql, ht);
         }
 
+        public void PostChargerOrderFinishInfo(string ChargeId, string ChargerGunId, int TransNo)
+        {
+            string sql = @$"
+            UPDATE `ChargerOrder` SET price = (
+                SELECT
+                *
+                FROM (
+                    SELECT ROUND(fee * 100) as fee FROM `ChargerGun` WHERE id = @chargergun_id AND charger_id = @charger_id LIMIT 1
+                ) a
+            ) WHERE id = @trans_no;
+            INSERT INTO `ChargerFinish` (
+                charger_id,
+                chargergun_id,
+                trans_no,
+                start_time,
+                end_time,
+                gun_in_time,
+                gun_out_time,
+                charge_time,
+                `time`,
+                charge_kw,
+                inerrupt_type
+            ) VALUES (
+                @charger_id,
+                @chargergun_id,
+                @trans_no,
+                (
+                    SELECT createat as start_time FROM `ChargerOrder` WHERE id = 135 LIMIT 1
+                ),
+                (
+                    SELECT DATE_ADD(createat, interval 2 hour) as end_time FROM `ChargerOrder` WHERE id = 135 LIMIT 1
+                ),
+                (
+                    SELECT createat as gun_in_time FROM `ChargerOrder` WHERE id = 135 LIMIT 1
+                ),
+                (
+                    SELECT DATE_ADD(createat, interval 2 hour) as gun_out_time FROM `ChargerOrder` WHERE id = 135 LIMIT 1
+                ),
+                7200,
+				NOW(),
+                100,
+                'N'
+            )
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@charger_id", new SQLParameter(ChargeId, MySqlDbType.VarChar));
+            ht.Add("@chargergun_id", new SQLParameter(ChargerGunId, MySqlDbType.VarChar));
+            ht.Add("@trans_no", new SQLParameter(TransNo, MySqlDbType.Int32));
+            _myqlconn.Execute(sql, ht);
+        }
+
         public ChargerPostModel GetChargerPostByKey(string Key, string Account)
         {
             string sql = @$"
