@@ -9,5 +9,6 @@ namespace backend.ViewModels.Power
     {
         public string rescode { get; set; }
         public string resmsg { get; set; }
+        public string resdata { get; set; }
     }
 }

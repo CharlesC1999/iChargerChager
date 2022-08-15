@@ -212,7 +212,7 @@ namespace backend.Services
             {
                 var responseStream = await response.Content.ReadAsStringAsync();
                 var responseObject = System.Text.Json.JsonSerializer.Deserialize<ChargerResponseViewModel>(responseStream);
-                if (responseObject.resmsg != "success")
+                if (responseObject.resdata != "SUCCESS")
                 {
                     throw new Exception("無法啟動充電槍");
                 }
