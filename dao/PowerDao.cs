@@ -285,7 +285,7 @@ namespace backend.dao
             Hashtable ht = new Hashtable();
             ht.Add("@trans_no", new SQLParameter(TransNo, MySqlDbType.Int32));
             ht.Add("@key", new SQLParameter(Key, MySqlDbType.VarChar));
-            ht.Add("@charge_time", new SQLParameter(10, MySqlDbType.Int32));
+            ht.Add("@charge_time", new SQLParameter(0, MySqlDbType.Int32));
             ht.Add("@charge_current", new SQLParameter("0", MySqlDbType.VarChar));
             ht.Add("@charge_voltage", new SQLParameter("0", MySqlDbType.VarChar));
             ht.Add("@charge_kw", new SQLParameter("0", MySqlDbType.VarChar));

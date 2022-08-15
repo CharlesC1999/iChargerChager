@@ -142,10 +142,10 @@ namespace backend.Controllers.Power
             try
             {
                 // 啟動充電槍
-                // await _service.PostChargerStart(model.Key, _AccountNumber);
+                await _service.PostChargerStart(model.Key, _AccountNumber);
 
                 // 改變狀態為目前充電中
-                // _service.UpdateChargerOrderStatus(OrderId, 1, _AccountNumber);
+                _service.UpdateChargerOrderStatus(OrderId, 1, _AccountNumber);
 
                 return Ok(new ResultViewModel<object>
                 {
@@ -279,14 +279,14 @@ namespace backend.Controllers.Power
             try
             {
                 // 結束充電槍
-                // await _service.PostChargerEnd(
-                //     new ChargerPostModel
-                //     {
-                //         station_id = model.ChargerId,
-                //         charger_id = model.ChargerGunId,
-                //         trans_no = model.TransNo
-                //     }
-                // );
+                await _service.PostChargerEnd(
+                    new ChargerPostModel
+                    {
+                        station_id = model.ChargerId,
+                        charger_id = model.ChargerGunId,
+                        trans_no = model.TransNo
+                    }
+                );
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
