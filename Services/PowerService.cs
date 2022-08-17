@@ -131,6 +131,12 @@ namespace backend.Services
             return Result;
         }
 
+        public OrderModel GetOrderByKey(string Key)
+        {
+            OrderModel Result = _PowerDao.GetOrderByKey(Key);
+            return Result;
+        }
+
         public async Task<int> PostChargerOrder(PowerPostModel model, string Account)
         {
             // 新增訂單

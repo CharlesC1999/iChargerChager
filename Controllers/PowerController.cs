@@ -123,6 +123,19 @@ namespace backend.Controllers.Power
                         Result = null,
                     });
                 }
+
+                // 確認是否有訂單
+                var OrderData = _service.GetOrderByKey(model.Key);
+                if (OrderData is not null)
+                {
+                    return BadRequest(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "該充電槍目前已有訂單",
+                        Result = null,
+                    });
+                }
+
                 // 建立訂單
                 OrderId = await _service.PostChargerOrder(
                     model,
