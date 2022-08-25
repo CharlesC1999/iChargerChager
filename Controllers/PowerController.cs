@@ -229,7 +229,7 @@ namespace backend.Controllers.Power
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
-                    message = "結束充電成功",
+                    message = "充電成功",
                     Result = null,
                 });
             }

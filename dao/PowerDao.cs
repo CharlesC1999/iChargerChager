@@ -164,7 +164,7 @@ namespace backend.dao
             `time`
             FROM `ChargerStatus`
             WHERE trans_no = @trans_no
-            ORDER BY `time` DESC
+            ORDER BY `time` DESC, status DESC
             LIMIT 1
             ";
             Hashtable ht = new Hashtable();
