@@ -137,10 +137,11 @@ namespace backend.Services
             return Result;
         }
 
-        public async Task<int> PostChargerOrder(PowerPostModel model, string Account)
+        public int PostChargerOrder(PowerPostModel model, string Account)
         {
             // 新增訂單
             int OrderId = _PowerDao.PostChargerOrder(
+                model.PayId,
                 model.CarId,
                 model.Key,
                 Account
@@ -162,11 +163,11 @@ namespace backend.Services
             );
 
             // 測試-新增結單資訊
-            _PowerDao.PostChargerOrderFinishInfo(
-                model.ChargerId,
-                model.ChargerGunId,
-                model.TransNo
-            );
+            // _PowerDao.PostChargerOrderFinishInfo(
+            //     model.ChargerId,
+            //     model.ChargerGunId,
+            //     model.TransNo
+            // );
             return true;
         }
 
@@ -229,9 +230,157 @@ namespace backend.Services
             }
         }
 
+        public async Task PostNotification(int OrderId, string Account, int Status)
+        {
+            OrderModel Data = _PowerDao.GetChargerOrderNow(OrderId.ToString());
+            if (Data is null) throw new Exception("查無此訂單");
+            if (Data.account != Account) throw new Exception("查無此訂單");
+            if (Data.status != Status) throw new Exception("訂單狀態錯誤");
+
+            // 取得手機Token
+            List<MemberNotifyModel> NotifyData = _PowerDao.GetNotifyTokenByAccount(OrderId.ToString());
+
+            foreach (var item in NotifyData)
+            {
+                var url = "https://fcm.googleapis.com/fcm/send";
+                var client = _clientFactory.CreateClient();
+                string authValue = "key=AAAAudnf1KU:APA91bHYDceYngjMAbf32Tkgecv3uKWfHy7FiQ7QToLSPbDwli3gT1YC0rakLAAA4vJ8KJzdsiotNk7y8Nh25rSTXRZsBwCcgBDuDI4TqcorIpEbpPFihQgU1swucQrlY7AuKyR7cwA5";
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authValue);
+
+                var body = new StringContent(
+                    System.Text.Json.JsonSerializer.Serialize(
+                        Status == 0 ?
+                        new
+                        {
+                            to = item,
+                            notification = new
+                            {
+                                title = "準備充電",
+                                body = @$"正在準備為您的車輛「{Data.car_plate}」充電，請稍等1-2分鐘
+                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                            }
+                        } : Status == 1 ? new
+                        {
+                            to = item,
+                            notification = new
+                            {
+                                title = "開始充電",
+                                body = @$"您的車輛「{Data.car_plate}」已經開始充電，感謝您的使用
+                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                            }
+                        } : Status == 2 ? new
+                        {
+                            to = item,
+                            notification = new
+                            {
+                                title = "結束充電",
+                                body = @$"您的車輛「{Data.car_plate}」已經充電結束，本次充電預估充電時間為「{(DateTime.Now - Convert.ToDateTime(Data.createat)).Minutes} 分鐘」，詳細訂單資訊請至「充電記錄查詢」功能瀏覽，感謝您本次的使用
+                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                            }
+                        } : new
+                        {
+                            to = item,
+                            notification = new
+                            {
+                                title = "充電異常",
+                                body = @$"您的車輛「{Data.car_plate}」目前發生充電異常，因此系統已幫您自動取消或結束訂單，請您至車輛確認目前充電樁狀態並重新開始充電流程，很抱歉造成您本次的困擾
+                                若發生充電異常等相關問題時歡迎來電客服：0800-000-000，我們將為您盡快解決問題"
+                            }
+                        }),
+                    Encoding.UTF8,
+                    Application.Json);
+                var response = await client.PostAsync(url, body);
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseStream = await response.Content.ReadAsStringAsync();
+                    var responseObject = System.Text.Json.JsonSerializer.Deserialize<ChargerResponseViewModel>(responseStream);
+                }
+                else
+                {
+                    throw new Exception("傳送失敗");
+                }
+            }
+        }
+
+        public async Task PostNotification(int OrderId, int Status)
+        {
+            OrderModel Data = _PowerDao.GetChargerOrderNow(OrderId.ToString());
+            if (Data is null) throw new Exception("查無此訂單");
+            if (Data.status != Status) throw new Exception("訂單狀態錯誤");
+
+            // 取得手機Token
+            List<MemberNotifyModel> NotifyData = _PowerDao.GetNotifyTokenByAccount(OrderId.ToString());
+
+            foreach (var item in NotifyData)
+            {
+                var url = "https://fcm.googleapis.com/fcm/send";
+                var client = _clientFactory.CreateClient();
+                string authValue = "key=AAAAudnf1KU:APA91bHYDceYngjMAbf32Tkgecv3uKWfHy7FiQ7QToLSPbDwli3gT1YC0rakLAAA4vJ8KJzdsiotNk7y8Nh25rSTXRZsBwCcgBDuDI4TqcorIpEbpPFihQgU1swucQrlY7AuKyR7cwA5";
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authValue);
+
+                var body = new StringContent(
+                    System.Text.Json.JsonSerializer.Serialize(
+                        Status == 0 ?
+                        new
+                        {
+                            to = item,
+                            notification = new
+                            {
+                                title = "準備充電",
+                                body = @$"正在準備為您的車輛「{Data.car_plate}」充電，請稍等1-2分鐘
+                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                            }
+                        } : Status == 1 ? new
+                        {
+                            to = item,
+                            notification = new
+                            {
+                                title = "開始充電",
+                                body = @$"您的車輛「{Data.car_plate}」已經開始充電，感謝您的使用
+                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                            }
+                        } : Status == 2 ? new
+                        {
+                            to = item,
+                            notification = new
+                            {
+                                title = "結束充電",
+                                body = @$"您的車輛「{Data.car_plate}」已經充電結束，本次充電預估充電時間為「{(DateTime.Now - Convert.ToDateTime(Data.createat)).Minutes} 分鐘」，詳細訂單資訊請至「充電記錄查詢」功能瀏覽，感謝您本次的使用
+                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                            }
+                        } : new
+                        {
+                            to = item,
+                            notification = new
+                            {
+                                title = "充電異常",
+                                body = @$"您的車輛「{Data.car_plate}」目前發生充電異常，因此系統已幫您自動取消或結束訂單，請您至車輛確認目前充電樁狀態並重新開始充電流程，很抱歉造成您本次的困擾
+                                若發生充電異常等相關問題時歡迎來電客服：0800-000-000，我們將為您盡快解決問題"
+                            }
+                        }),
+                    Encoding.UTF8,
+                    Application.Json);
+                var response = await client.PostAsync(url, body);
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseStream = await response.Content.ReadAsStringAsync();
+                    var responseObject = System.Text.Json.JsonSerializer.Deserialize<ChargerResponseViewModel>(responseStream);
+                }
+                else
+                {
+                    throw new Exception("傳送失敗");
+                }
+            }
+        }
+
         public void UpdateChargerOrderStatus(int OrderId, int Status, string Account)
         {
             _PowerDao.UpdateChargerOrderStatus(OrderId, Status, Account);
+        }
+
+        public void UpdateChargerOrderStatus(int OrderId, int Status)
+        {
+            _PowerDao.UpdateChargerOrderStatus(OrderId, Status);
         }
 
         public void CancelChargerOrder(string Account)

@@ -137,7 +137,7 @@ namespace backend.Controllers.Power
                 }
 
                 // 建立訂單
-                OrderId = await _service.PostChargerOrder(
+                OrderId = _service.PostChargerOrder(
                     model,
                     _AccountNumber
                 );
@@ -154,12 +154,38 @@ namespace backend.Controllers.Power
 
             try
             {
+                // 傳送訂單建立通知
+                await _service.PostNotification(OrderId, _AccountNumber, 0);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Notification Error: 'OrderId = {OrderId}, Account = {_AccountNumber}, Message = {e}'");
+            }
+
+            try
+            {
                 // 啟動充電槍
                 await _service.PostChargerStart(model.Key, _AccountNumber);
 
                 // 改變狀態為目前充電中
                 _service.UpdateChargerOrderStatus(OrderId, 1, _AccountNumber);
+            }
+            catch (Exception e)
+            {
+                // 改變狀態為目前充電失敗
+                _service.CancelChargerOrder(_AccountNumber);
+                return BadRequest(new ResultViewModel<string>
+                {
+                    isSuccess = false,
+                    message = "充電槍啟動失敗",
+                    Result = null,
+                });
+            }
 
+            try
+            {
+                // 傳送訂單建立通知
+                await _service.PostNotification(OrderId, _AccountNumber, 1);
                 return Ok(new ResultViewModel<object>
                 {
                     isSuccess = true,
@@ -172,13 +198,15 @@ namespace backend.Controllers.Power
             }
             catch (Exception e)
             {
-                // 改變狀態為目前充電失敗
-                _service.CancelChargerOrder(_AccountNumber);
-                return BadRequest(new ResultViewModel<string>
+                Console.WriteLine($"Notification Error: 'OrderId = {OrderId}, Account = {_AccountNumber}, Message = {e}'");
+                return Ok(new ResultViewModel<object>
                 {
-                    isSuccess = false,
-                    message = "充電槍啟動失敗",
-                    Result = null,
+                    isSuccess = true,
+                    message = "充電槍啟動成功",
+                    Result = new
+                    {
+                        OrderId = OrderId,
+                    },
                 });
             }
         }
@@ -221,12 +249,14 @@ namespace backend.Controllers.Power
         /// </returns>
         [HttpGet]
         [Route("Finish")]
-        public IActionResult GetChargerOrderFinishSocket([FromQuery] int TransNo)
+        public async Task<IActionResult> GetChargerOrderFinishSocket([FromQuery] int TransNo)
         {
             try
             {
                 // 結束訂單
-                _service.UpdateChargerOrderStatus(TransNo, 2, _AccountNumber);
+                _service.UpdateChargerOrderStatus(TransNo, 2);
+                // 傳送訂單建立通知
+                await _service.PostNotification(TransNo, 2);
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
@@ -265,6 +295,17 @@ namespace backend.Controllers.Power
                         Result = null,
                     });
                 }
+
+                // 結束充電槍
+                await _service.PostChargerEnd(
+                    new ChargerPostModel
+                    {
+                        station_id = model.ChargerId,
+                        charger_id = model.ChargerGunId,
+                        trans_no = model.TransNo
+                    }
+                );
+                
                 // 結束訂單
                 bool Result = _service.PostChargerOrderFinish(
                     model
@@ -278,28 +319,8 @@ namespace backend.Controllers.Power
                         Result = null,
                     });
                 }
-            }
-            catch (Exception e)
-            {
-                return BadRequest(new ResultViewModel<string>
-                {
-                    isSuccess = false,
-                    message = e.Message.ToString(),
-                    Result = null,
-                });
-            }
-
-            try
-            {
-                // 結束充電槍
-                await _service.PostChargerEnd(
-                    new ChargerPostModel
-                    {
-                        station_id = model.ChargerId,
-                        charger_id = model.ChargerGunId,
-                        trans_no = model.TransNo
-                    }
-                );
+                // 傳送訂單建立通知
+                await _service.PostNotification(model.TransNo, _AccountNumber, 2);
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
@@ -309,7 +330,6 @@ namespace backend.Controllers.Power
             }
             catch (Exception e)
             {
-                _service.CancelChargerOrder(_AccountNumber);
                 return BadRequest(new ResultViewModel<string>
                 {
                     isSuccess = false,

@@ -272,11 +272,12 @@ namespace backend.dao
             return id;
         }
 
-        public int PostChargerOrder(string CarId, string Key, string Account)
+        public int PostChargerOrder(string PayId, string CarId, string Key, string Account)
         {
             string sql = @$"
             INSERT INTO `ChargerOrder` (
                 account,
+                pay_id,
                 car_id,
                 charger_id,
                 chargergun_id,
@@ -287,6 +288,7 @@ namespace backend.dao
                 updateat
             ) VALUES (
                 @account,
+                UUID_TO_BIN(@pay_id),
                 UUID_TO_BIN(@car_id),
                 (
                     SELECT
@@ -312,6 +314,7 @@ namespace backend.dao
             Hashtable ht = new Hashtable();
             ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
             ht.Add("@car_id", new SQLParameter(CarId, MySqlDbType.VarChar));
+            ht.Add("@pay_id", new SQLParameter(PayId, MySqlDbType.VarChar));
             ht.Add("@key", new SQLParameter(Key, MySqlDbType.VarChar));
             int Id = _myqlconn.ExecuteReturnId(sql, ht);
             return Id;
@@ -476,6 +479,34 @@ namespace backend.dao
             ht.Add("@status", new SQLParameter(Status, MySqlDbType.Int16));
             ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
             _myqlconn.Execute(sql, ht);
+        }
+
+        public void UpdateChargerOrderStatus(int OrderId, int Status)
+        {
+            string sql = @$"
+            UPDATE `ChargerOrder`
+            SET status = @status, updateat = NOW()
+            WHERE id = @order_id
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@order_id", new SQLParameter(OrderId, MySqlDbType.Int16));
+            ht.Add("@status", new SQLParameter(Status, MySqlDbType.Int16));
+            _myqlconn.Execute(sql, ht);
+        }
+
+        public List<MemberNotifyModel> GetNotifyTokenByAccount(string Account)
+        {
+            string sql = @$"
+            SELECT
+            account,
+            token
+            FROM `MemberNotify`
+            WHERE account = @account
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            List<MemberNotifyModel> Result = _myqlconn.GetDataList<MemberNotifyModel>(sql, ht);
+            return Result;
         }
     }
 }
