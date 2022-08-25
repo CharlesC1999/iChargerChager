@@ -230,6 +230,45 @@ namespace backend.Services
             }
         }
 
+        public async Task PostCancelNotification(string Account)
+        {
+            // 取得手機Token
+            List<MemberNotifyModel> NotifyData = _PowerDao.GetNotifyTokenByAccount(Account);
+
+            foreach (var item in NotifyData)
+            {
+                var url = "https://fcm.googleapis.com/fcm/send";
+                var client = _clientFactory.CreateClient();
+                string authValue = "key=AAAAudnf1KU:APA91bHYDceYngjMAbf32Tkgecv3uKWfHy7FiQ7QToLSPbDwli3gT1YC0rakLAAA4vJ8KJzdsiotNk7y8Nh25rSTXRZsBwCcgBDuDI4TqcorIpEbpPFihQgU1swucQrlY7AuKyR7cwA5";
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authValue);
+
+                var body = new StringContent(
+                    System.Text.Json.JsonSerializer.Serialize(
+                        new
+                        {
+                            to = item,
+                            notification = new
+                            {
+                                title = "充電失敗",
+                                body = @$"很抱歉，因目前充電樁連線異常，系統目前無法幫您進行充電，請再試一次或來電客服將由專人為您服務
+                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                            }
+                        }),
+                    Encoding.UTF8,
+                    Application.Json);
+                var response = await client.PostAsync(url, body);
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseStream = await response.Content.ReadAsStringAsync();
+                    var responseObject = System.Text.Json.JsonSerializer.Deserialize<ChargerResponseViewModel>(responseStream);
+                }
+                else
+                {
+                    throw new Exception("傳送失敗");
+                }
+            }
+        }
+
         public async Task PostNotification(int OrderId, string Account, int Status)
         {
             OrderModel Data = _PowerDao.GetChargerOrderNow(OrderId.ToString());
@@ -238,7 +277,7 @@ namespace backend.Services
             if (Data.status != Status) throw new Exception("訂單狀態錯誤");
 
             // 取得手機Token
-            List<MemberNotifyModel> NotifyData = _PowerDao.GetNotifyTokenByAccount(OrderId.ToString());
+            List<MemberNotifyModel> NotifyData = _PowerDao.GetNotifyTokenByAccount(Account);
 
             foreach (var item in NotifyData)
             {
@@ -309,7 +348,7 @@ namespace backend.Services
             if (Data.status != Status) throw new Exception("訂單狀態錯誤");
 
             // 取得手機Token
-            List<MemberNotifyModel> NotifyData = _PowerDao.GetNotifyTokenByAccount(OrderId.ToString());
+            List<MemberNotifyModel> NotifyData = _PowerDao.GetNotifyTokenByAccount(Data.account);
 
             foreach (var item in NotifyData)
             {

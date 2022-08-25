@@ -165,7 +165,7 @@ namespace backend.Controllers.Power
             try
             {
                 // 啟動充電槍
-                await _service.PostChargerStart(model.Key, _AccountNumber);
+                // await _service.PostChargerStart(model.Key, _AccountNumber);
 
                 // 改變狀態為目前充電中
                 _service.UpdateChargerOrderStatus(OrderId, 1, _AccountNumber);
@@ -174,6 +174,8 @@ namespace backend.Controllers.Power
             {
                 // 改變狀態為目前充電失敗
                 _service.CancelChargerOrder(_AccountNumber);
+                // 傳送訂單建立通知
+                await _service.PostCancelNotification(_AccountNumber);
                 return BadRequest(new ResultViewModel<string>
                 {
                     isSuccess = false,
@@ -297,14 +299,14 @@ namespace backend.Controllers.Power
                 }
 
                 // 結束充電槍
-                await _service.PostChargerEnd(
-                    new ChargerPostModel
-                    {
-                        station_id = model.ChargerId,
-                        charger_id = model.ChargerGunId,
-                        trans_no = model.TransNo
-                    }
-                );
+                // await _service.PostChargerEnd(
+                //     new ChargerPostModel
+                //     {
+                //         station_id = model.ChargerId,
+                //         charger_id = model.ChargerGunId,
+                //         trans_no = model.TransNo
+                //     }
+                // );
                 
                 // 結束訂單
                 bool Result = _service.PostChargerOrderFinish(
