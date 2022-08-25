@@ -105,7 +105,6 @@ namespace backend.dao
                 updateat
                 FROM `ChargerOrder`
                 WHERE id = @id
-                ORDER BY createat DESC
                 LIMIT 1
             ) a
             JOIN `Car` b
@@ -172,7 +171,7 @@ namespace backend.dao
                 updateat
                 FROM `ChargerOrder`
                 WHERE account = @account
-                ORDER BY createat DESC
+                ORDER BY id DESC, createat DESC
                 LIMIT 1
             ) a
             JOIN `Car` b
