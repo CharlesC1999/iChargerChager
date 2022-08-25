@@ -146,10 +146,10 @@ namespace backend.Services
                 model.Key,
                 Account
             );
-            _PowerDao.PostChargerInfo(
-                model.Key,
-                OrderId
-            );
+            // _PowerDao.PostChargerInfo(
+            //     model.Key,
+            //     OrderId
+            // );
             return OrderId;
         }
 
