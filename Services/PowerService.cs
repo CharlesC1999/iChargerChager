@@ -240,18 +240,17 @@ namespace backend.Services
                 var url = "https://fcm.googleapis.com/fcm/send";
                 var client = _clientFactory.CreateClient();
                 string authValue = "key=AAAAudnf1KU:APA91bHYDceYngjMAbf32Tkgecv3uKWfHy7FiQ7QToLSPbDwli3gT1YC0rakLAAA4vJ8KJzdsiotNk7y8Nh25rSTXRZsBwCcgBDuDI4TqcorIpEbpPFihQgU1swucQrlY7AuKyR7cwA5";
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authValue);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("key", "=" + authValue);
 
                 var body = new StringContent(
                     System.Text.Json.JsonSerializer.Serialize(
                         new
                         {
-                            to = item,
+                            to = item.token,
                             notification = new
                             {
                                 title = "充電失敗",
-                                body = @$"很抱歉，因目前充電樁連線異常，系統目前無法幫您進行充電，請再試一次或來電客服將由專人為您服務
-                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                                body = @$"很抱歉，因目前充電樁連線異常，系統目前無法幫您進行充電，請再試一次或來電客服將由專人為您服務，若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
                             }
                         }),
                     Encoding.UTF8,
@@ -284,47 +283,43 @@ namespace backend.Services
             {
                 var url = "https://fcm.googleapis.com/fcm/send";
                 var client = _clientFactory.CreateClient();
-                string authValue = "key=AAAAudnf1KU:APA91bHYDceYngjMAbf32Tkgecv3uKWfHy7FiQ7QToLSPbDwli3gT1YC0rakLAAA4vJ8KJzdsiotNk7y8Nh25rSTXRZsBwCcgBDuDI4TqcorIpEbpPFihQgU1swucQrlY7AuKyR7cwA5";
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authValue);
+                string authValue = "AAAAudnf1KU:APA91bHYDceYngjMAbf32Tkgecv3uKWfHy7FiQ7QToLSPbDwli3gT1YC0rakLAAA4vJ8KJzdsiotNk7y8Nh25rSTXRZsBwCcgBDuDI4TqcorIpEbpPFihQgU1swucQrlY7AuKyR7cwA5";
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("key", "=" + authValue);
 
                 var body = new StringContent(
                     System.Text.Json.JsonSerializer.Serialize(
                         Status == 0 ?
                         new
                         {
-                            to = item,
+                            to = item.token,
                             notification = new
                             {
                                 title = "準備充電",
-                                body = @$"正在準備為您的車輛「{Data.car_plate}」充電，請稍等1-2分鐘
-                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                                body = @$"正在準備為您的車輛「{Data.car_plate}」充電，請稍等1-2分鐘，若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
                             }
                         } : Status == 1 ? new
                         {
-                            to = item,
+                            to = item.token,
                             notification = new
                             {
                                 title = "開始充電",
-                                body = @$"您的車輛「{Data.car_plate}」已經開始充電，感謝您的使用
-                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                                body = @$"您的車輛「{Data.car_plate}」已經開始充電，感謝您的使用，若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
                             }
                         } : Status == 2 ? new
                         {
-                            to = item,
+                            to = item.token,
                             notification = new
                             {
                                 title = "結束充電",
-                                body = @$"您的車輛「{Data.car_plate}」已經充電結束，本次充電預估充電時間為「{(DateTime.Now - Convert.ToDateTime(Data.createat)).Minutes} 分鐘」，詳細訂單資訊請至「充電記錄查詢」功能瀏覽，感謝您本次的使用
-                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                                body = @$"您的車輛「{Data.car_plate}」已經充電結束，本次充電預估充電時間為「{(DateTime.Now - Convert.ToDateTime(Data.createat)).Minutes} 分鐘」，詳細訂單資訊請至「充電記錄查詢」功能瀏覽，感謝您本次的使用，若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
                             }
                         } : new
                         {
-                            to = item,
+                            to = item.token,
                             notification = new
                             {
                                 title = "充電異常",
-                                body = @$"您的車輛「{Data.car_plate}」目前發生充電異常，因此系統已幫您自動取消或結束訂單，請您至車輛確認目前充電樁狀態並重新開始充電流程，很抱歉造成您本次的困擾
-                                若發生充電異常等相關問題時歡迎來電客服：0800-000-000，我們將為您盡快解決問題"
+                                body = @$"您的車輛「{Data.car_plate}」目前發生充電異常，因此系統已幫您自動取消或結束訂單，請您至車輛確認目前充電樁狀態並重新開始充電流程，很抱歉造成您本次的困擾，若發生充電異常等相關問題時歡迎來電客服：0800-000-000，我們將為您盡快解決問題"
                             }
                         }),
                     Encoding.UTF8,
@@ -336,9 +331,7 @@ namespace backend.Services
                     var responseObject = System.Text.Json.JsonSerializer.Deserialize<ChargerResponseViewModel>(responseStream);
                 }
                 else
-                {
-                    throw new Exception("傳送失敗");
-                }
+                { }
             }
         }
 
@@ -356,46 +349,42 @@ namespace backend.Services
                 var url = "https://fcm.googleapis.com/fcm/send";
                 var client = _clientFactory.CreateClient();
                 string authValue = "key=AAAAudnf1KU:APA91bHYDceYngjMAbf32Tkgecv3uKWfHy7FiQ7QToLSPbDwli3gT1YC0rakLAAA4vJ8KJzdsiotNk7y8Nh25rSTXRZsBwCcgBDuDI4TqcorIpEbpPFihQgU1swucQrlY7AuKyR7cwA5";
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authValue);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("key", "=" + authValue);
 
                 var body = new StringContent(
                     System.Text.Json.JsonSerializer.Serialize(
                         Status == 0 ?
                         new
                         {
-                            to = item,
+                            to = item.token,
                             notification = new
                             {
                                 title = "準備充電",
-                                body = @$"正在準備為您的車輛「{Data.car_plate}」充電，請稍等1-2分鐘
-                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                                body = @$"正在準備為您的車輛「{Data.car_plate}」充電，請稍等1-2分鐘，若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
                             }
                         } : Status == 1 ? new
                         {
-                            to = item,
+                            to = item.token,
                             notification = new
                             {
                                 title = "開始充電",
-                                body = @$"您的車輛「{Data.car_plate}」已經開始充電，感謝您的使用
-                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                                body = @$"您的車輛「{Data.car_plate}」已經開始充電，感謝您的使用，若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
                             }
                         } : Status == 2 ? new
                         {
-                            to = item,
+                            to = item.token,
                             notification = new
                             {
                                 title = "結束充電",
-                                body = @$"您的車輛「{Data.car_plate}」已經充電結束，本次充電預估充電時間為「{(DateTime.Now - Convert.ToDateTime(Data.createat)).Minutes} 分鐘」，詳細訂單資訊請至「充電記錄查詢」功能瀏覽，感謝您本次的使用
-                                若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
+                                body = @$"您的車輛「{Data.car_plate}」已經充電結束，本次充電預估充電時間為「{(DateTime.Now - Convert.ToDateTime(Data.createat)).Minutes} 分鐘」，詳細訂單資訊請至「充電記錄查詢」功能瀏覽，感謝您本次的使用，若有充電問題歡迎來電客服：0800-000-000，我們將為您服務"
                             }
                         } : new
                         {
-                            to = item,
+                            to = item.token,
                             notification = new
                             {
                                 title = "充電異常",
-                                body = @$"您的車輛「{Data.car_plate}」目前發生充電異常，因此系統已幫您自動取消或結束訂單，請您至車輛確認目前充電樁狀態並重新開始充電流程，很抱歉造成您本次的困擾
-                                若發生充電異常等相關問題時歡迎來電客服：0800-000-000，我們將為您盡快解決問題"
+                                body = @$"您的車輛「{Data.car_plate}」目前發生充電異常，因此系統已幫您自動取消或結束訂單，請您至車輛確認目前充電樁狀態並重新開始充電流程，很抱歉造成您本次的困擾，若發生充電異常等相關問題時歡迎來電客服：0800-000-000，我們將為您盡快解決問題"
                             }
                         }),
                     Encoding.UTF8,
@@ -426,6 +415,18 @@ namespace backend.Services
         public void CancelChargerOrder(string Account)
         {
             _PowerDao.CancelChargerOrder(Account);
+        }
+
+        public CarViewModel GetByCarId(string CarId)
+        {
+            CarViewModel Result = _PowerDao.GetCarById(CarId);
+            return Result;
+        }
+
+        public PayViewModel GetByCardId(string CardId, string Account)
+        {
+            PayViewModel Result = _PowerDao.GetByCardId(CardId, Account);
+            return Result;
         }
     }
 }

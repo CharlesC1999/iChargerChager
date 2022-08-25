@@ -575,5 +575,37 @@ namespace backend.dao
             List<MemberNotifyModel> Result = _myqlconn.GetDataList<MemberNotifyModel>(sql, ht);
             return Result;
         }
+
+        public CarViewModel GetCarById(string CarId)
+        {
+            string sql = @$"
+            SELECT
+            BIN_TO_UUID(id) as id,
+            plate
+            FROM `Car`
+            WHERE id = UUID_TO_BIN(@id)
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@id", new SQLParameter(CarId, MySqlDbType.VarChar));
+            CarViewModel Result = _myqlconn.GetDataList<CarViewModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
+
+        public PayViewModel GetByCardId(string CardId, string Account)
+        {
+            string sql = @$"
+            SELECT
+            BIN_TO_UUID(id) as id,
+            account,
+            number
+            FROM `Card`
+            WHERE id = UUID_TO_BIN(@id) AND account = @account
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@id", new SQLParameter(CardId, MySqlDbType.VarChar));
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            PayViewModel Result = _myqlconn.GetDataList<PayViewModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
     }
 }

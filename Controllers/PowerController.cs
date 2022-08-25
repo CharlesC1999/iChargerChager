@@ -136,6 +136,30 @@ namespace backend.Controllers.Power
                     });
                 }
 
+                // 確認車號
+                var CarData = _service.GetByCarId(model.CarId);
+                if (CarData is null)
+                {
+                    return NotFound(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "查無此車號",
+                        Result = null,
+                    });
+                }
+
+                // 確認卡片
+                var CardData = _service.GetByCardId(model.PayId, _AccountNumber);
+                if (CardData is null)
+                {
+                    return NotFound(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "查無此卡片",
+                        Result = null,
+                    });
+                }
+
                 // 建立訂單
                 OrderId = _service.PostChargerOrder(
                     model,
