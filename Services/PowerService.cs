@@ -271,9 +271,10 @@ namespace backend.Services
 
         public async Task PostNotification(int OrderId, string Account, int Status)
         {
-            OrderModel Data = _PowerDao.GetChargerOrderNow(OrderId.ToString());
+            OrderModel Data = _PowerDao.GetChargerOrderNow(Account);
             if (Data is null) throw new Exception("查無此訂單");
             if (Data.account != Account) throw new Exception("查無此訂單");
+            if (Data.id != OrderId) throw new Exception("查無此訂單");
             if (Data.status != Status) throw new Exception("訂單狀態錯誤");
 
             // 取得手機Token
@@ -343,7 +344,7 @@ namespace backend.Services
 
         public async Task PostNotification(int OrderId, int Status)
         {
-            OrderModel Data = _PowerDao.GetChargerOrderNow(OrderId.ToString());
+            OrderModel Data = _PowerDao.GetChargerOrderById(OrderId.ToString());
             if (Data is null) throw new Exception("查無此訂單");
             if (Data.status != Status) throw new Exception("訂單狀態錯誤");
 

@@ -60,6 +60,73 @@ namespace backend.dao
             return Result;
         }
 
+        public OrderModel GetChargerOrderById(string OrderId)
+        {
+            string sql = @$"
+            SELECT
+            a.id,
+			a.account,
+			BIN_TO_UUID(a.car_id) as car_id,
+            REPLACE(a.charger_id, '\0', '') as charger_id,
+            REPLACE(a.chargergun_id, '\0', '') as chargergun_id,
+            a.status,
+            a.createid,
+            a.createat,
+            a.updateid,
+            a.updateat,
+            b.plate as car_plate,
+            BIN_TO_UUID(b.vehiclestyle_id) as car_vehiclestyle_id,
+            c.brand as car_vehiclestyle_brand,
+            c.model as car_vehiclestyle_model,
+            d.name as charger_name,
+            d.address as charger_address,
+            BIN_TO_UUID(d.chargerlocation_id) as chargerlocation_id,
+            e.name as chargerlocation_name,
+            e.address as chargerlocation_address,
+            ST_AsGeoJSON(e.geom) as chargerlocation_geom,
+            f.type as chargergun_type,
+            f.type_power as chargergun_type_power,
+            f.fee as chargergun_fee,
+            f.name as chargergun_name,
+            f.address as chargergun_address,
+            BIN_TO_UUID(g.id) as chargersupplier_id,
+            g.name as chargersupplier_name
+            FROM (
+                SELECT
+                id,
+                account,
+                car_id,
+                charger_id,
+                chargergun_id,
+                status,
+                createid,
+                createat,
+                updateid,
+                updateat
+                FROM `ChargerOrder`
+                WHERE id = @id
+                ORDER BY createat DESC
+                LIMIT 1
+            ) a
+            JOIN `Car` b
+            ON a.car_id = b.id
+            JOIN `CarVehicleStyle` c
+            ON b.vehiclestyle_id = c.id
+            JOIN `Charger` d
+            ON a.charger_id = d.id
+            JOIN `ChargerLocation` e
+            ON d.chargerlocation_id = e.id
+            JOIN `ChargerGun` f
+            ON a.chargergun_id = f.id
+            JOIN `ChargerSupplier` g
+            ON d.chargersupplier_id = g.id
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@id", new SQLParameter(OrderId, MySqlDbType.VarChar));
+            OrderModel Result = _myqlconn.GetDataList<OrderModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
+
         public OrderModel GetChargerOrderNow(string Account)
         {
             string sql = @$"
