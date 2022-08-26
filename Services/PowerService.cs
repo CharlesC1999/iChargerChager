@@ -146,10 +146,11 @@ namespace backend.Services
                 model.Key,
                 Account
             );
-            // _PowerDao.PostChargerInfo(
-            //     model.Key,
-            //     OrderId
-            // );
+            //初始化資料
+            _PowerDao.PostChargerInfo(
+                model.Key,
+                OrderId
+            );
             return OrderId;
         }
 
