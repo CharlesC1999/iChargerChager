@@ -43,7 +43,7 @@ namespace backend.dao
                 charger_id,
                 chargergun_id
                 FROM `ChargerQRCode`
-                WHERE `key` = UUID_TO_BIN(@key)
+                WHERE `key` = @key
             ) a
             JOIN `Charger` b
             ON a.charger_id = b.id
@@ -287,7 +287,7 @@ namespace backend.dao
                     charger_id, 
                     chargergun_id 
                     FROM `ChargerQRCode` 
-                    WHERE `key` = UUID_TO_BIN(@key)
+                    WHERE `key` = @key
                 ) a
                 JOIN `ChargerOrder` b
                 ON a.charger_id = b.charger_id AND a.chargergun_id = b.chargergun_id
@@ -360,14 +360,14 @@ namespace backend.dao
                     SELECT
                     charger_id
                     FROM `ChargerQRCode`
-                    WHERE `key` = UUID_TO_BIN(@key)
+                    WHERE `key` = @key
                     LIMIT 1
                 ),
                 (
                     SELECT
                     chargergun_id
                     FROM `ChargerQRCode`
-                    WHERE `key` = UUID_TO_BIN(@key)
+                    WHERE `key` = @key
                     LIMIT 1
                 ),
                 0,
@@ -405,14 +405,14 @@ namespace backend.dao
                     SELECT
                     charger_id
                     FROM `ChargerQRCode`
-                    WHERE `key` = UUID_TO_BIN(@key)
+                    WHERE `key` = @key
                     LIMIT 1
                 ),
                 (
                     SELECT
                     chargergun_id
                     FROM `ChargerQRCode`
-                    WHERE `key` = UUID_TO_BIN(@key)
+                    WHERE `key` = @key
                     LIMIT 1
                 ),
                 @trans_no,
@@ -512,7 +512,7 @@ namespace backend.dao
                 SELECT id as trans_no FROM `ChargerOrder` WHERE account = @account AND status = 0 LIMIT 1
             ) as trans_no
             FROM `ChargerQRCode`
-            WHERE `key` = UUID_TO_BIN(@key)
+            WHERE `key` = @key
             ";
             Hashtable ht = new Hashtable();
             ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
