@@ -269,6 +269,39 @@ namespace backend.Controllers.Power
         }
 
         /// <summary>
+        /// 使用者錯誤結單(SOCKET)
+        /// </summary>
+        /// <returns>
+        /// </returns>
+        [HttpGet]
+        [Route("Error")]
+        public async Task<IActionResult> GetChargerOrderFinishErrorSocket([FromQuery] int TransNo)
+        {
+            try
+            {
+                // 結束訂單
+                _service.UpdateChargerOrderStatus(TransNo, -1);
+                // 傳送訂單建立通知
+                await _service.PostNotification(TransNo, -1);
+                return Ok(new ResultViewModel<string>
+                {
+                    isSuccess = true,
+                    message = "結束充電成功",
+                    Result = null,
+                });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new ResultViewModel<string>
+                {
+                    isSuccess = false,
+                    message = e.Message.ToString(),
+                    Result = null,
+                });
+            }
+        }
+
+        /// <summary>
         /// 使用者結單(SOCKET)
         /// </summary>
         /// <returns>
