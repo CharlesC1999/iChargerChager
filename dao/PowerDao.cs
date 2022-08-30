@@ -313,6 +313,40 @@ namespace backend.dao
             return Result;
         }
 
+        public void UpdateChargerGunStatus(int TransNo, int Status)
+        {
+            Hashtable ht = new Hashtable();
+            string sql = @$"
+            UPDATE `ChargerGun` SET status = @status 
+            WHERE charger_id = ( SELECT charger_id FROM `ChargerOrder` WHERE id = @id LIMIT 1 ) AND id = ( SELECT chargergun_id as id FROM `ChargerOrder` WHERE id = @id LIMIT 1 );
+            ";
+            ht.Add("@id", new SQLParameter(TransNo, MySqlDbType.Int16));
+            ht.Add("@status", new SQLParameter(Status, MySqlDbType.VarChar));
+            _myqlconn.Execute(sql, ht);
+        }
+
+        public void UpdateChargerGunStatus(string Key, int Status)
+        {
+            string sql = @$"
+            SELECT 
+            charger_id, 
+            chargergun_id 
+            FROM `ChargerQRCode` 
+            WHERE `key` = @key
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@key", new SQLParameter(Key, MySqlDbType.VarChar));
+            ChargerQRCodeModel Data = _myqlconn.GetDataList<ChargerQRCodeModel>(sql, ht).FirstOrDefault();
+            if (Data is null) return;
+            sql = @$"
+            UPDATE `ChargerGun` SET status = @status WHERE charger_id = @charger_id AND id = @chargergun_id;
+            ";
+            ht.Add("@charger_id", new SQLParameter(Data.charger_id, MySqlDbType.VarChar));
+            ht.Add("@id", new SQLParameter(Data.chargergun_id, MySqlDbType.VarChar));
+            ht.Add("@status", new SQLParameter(Status, MySqlDbType.VarChar));
+            _myqlconn.Execute(sql, ht);
+        }
+
         public int PostChargerTransaction(string OrderId, string Account)
         {
             string sql = @$"
@@ -538,7 +572,7 @@ namespace backend.dao
             string sql = @$"
             UPDATE `ChargerOrder`
             SET status = @status, updateid = @account, updateat = NOW()
-            WHERE id = @order_id
+            WHERE id = @order_id;
             ";
             Hashtable ht = new Hashtable();
             ht.Add("@order_id", new SQLParameter(OrderId, MySqlDbType.Int16));

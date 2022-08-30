@@ -137,6 +137,16 @@ namespace backend.Services
             return Result;
         }
 
+        public void UpdateChargerGunStatus(int TransNo, int Status)
+        {
+            _PowerDao.UpdateChargerGunStatus(TransNo, Status);
+        }
+
+        public void UpdateChargerGunStatus(string Key, int Status)
+        {
+            _PowerDao.UpdateChargerGunStatus(Key, Status);
+        }
+
         public int PostChargerOrder(PowerPostModel model, string Account)
         {
             // 新增訂單

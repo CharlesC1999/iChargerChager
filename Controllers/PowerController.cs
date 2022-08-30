@@ -193,6 +193,9 @@ namespace backend.Controllers.Power
 
                 // 改變狀態為目前充電中
                 _service.UpdateChargerOrderStatus(OrderId, 1, _AccountNumber);
+
+                // 改變充電樁狀態
+                _service.UpdateChargerGunStatus(model.Key, 2);
             }
             catch (Exception e)
             {
@@ -316,6 +319,8 @@ namespace backend.Controllers.Power
                 _service.UpdateChargerOrderStatus(TransNo, 2);
                 // 傳送訂單建立通知
                 await _service.PostNotification(TransNo, 2);
+                // 改變充電樁狀態
+                _service.UpdateChargerGunStatus(TransNo, 1);
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
@@ -380,6 +385,8 @@ namespace backend.Controllers.Power
                 }
                 // 傳送訂單建立通知
                 await _service.PostNotification(model.TransNo, _AccountNumber, 2);
+                // 改變充電樁狀態
+                _service.UpdateChargerGunStatus(model.TransNo, 1);
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
