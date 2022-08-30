@@ -250,7 +250,7 @@ namespace backend.Services
             {
                 var url = "https://fcm.googleapis.com/fcm/send";
                 var client = _clientFactory.CreateClient();
-                string authValue = "key=AAAAudnf1KU:APA91bHYDceYngjMAbf32Tkgecv3uKWfHy7FiQ7QToLSPbDwli3gT1YC0rakLAAA4vJ8KJzdsiotNk7y8Nh25rSTXRZsBwCcgBDuDI4TqcorIpEbpPFihQgU1swucQrlY7AuKyR7cwA5";
+                string authValue = "AAAAudnf1KU:APA91bHYDceYngjMAbf32Tkgecv3uKWfHy7FiQ7QToLSPbDwli3gT1YC0rakLAAA4vJ8KJzdsiotNk7y8Nh25rSTXRZsBwCcgBDuDI4TqcorIpEbpPFihQgU1swucQrlY7AuKyR7cwA5";
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("key", "=" + authValue);
 
                 var body = new StringContent(

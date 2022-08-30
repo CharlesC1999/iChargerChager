@@ -341,7 +341,7 @@ namespace backend.dao
             ChargerQRCodeModel Data = _myqlconn.GetDataList<ChargerQRCodeModel>(sql, ht).FirstOrDefault();
             if (Data is null) return;
             sql = @$"
-            UPDATE `ChargerGun` SET status = @status WHERE charger_id = @charger_id AND id = @chargergun_id;
+            UPDATE `ChargerGun` SET status = @status WHERE charger_id = @charger_id AND id = @id;
             ";
             ht.Add("@charger_id", new SQLParameter(Data.charger_id, MySqlDbType.VarChar));
             ht.Add("@id", new SQLParameter(Data.chargergun_id, MySqlDbType.VarChar));
@@ -562,7 +562,7 @@ namespace backend.dao
             string sql = @$"
             UPDATE `ChargerOrder`
             SET status = -1
-            WHERE account = @account AND status = 0
+            WHERE account = @account AND status IN (0, 1)
             ";
             Hashtable ht = new Hashtable();
             ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
