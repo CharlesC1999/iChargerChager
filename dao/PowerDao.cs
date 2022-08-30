@@ -197,19 +197,21 @@ namespace backend.dao
         {
             string sql = @$"
             SELECT
-            BIN_TO_UUID(id) as id,
-            charger_id,
-            chargergun_id,
-            charge_time,
-            charge_current,
-            charge_voltage,
-            charge_kw,
-            current_kw,
-            soc,
-            `time`
-            FROM `ChargerInfo`
-            WHERE trans_no = @trans_no
-            ORDER BY `time` DESC
+            a.BIN_TO_UUID(id) as id,
+            a.charger_id,
+            a.chargergun_id,
+            TIME_TO_SEC(TIMEDIFF(NOW(), b.createat)) as charge_time,
+            a.charge_current,
+            a.charge_voltage,
+            a.charge_kw,
+            a.current_kw,
+            a.soc,
+            a.`time`
+            FROM `ChargerInfo` a
+            JOIN `ChargerOrder` b
+            ON a.trans_no = b.id
+            WHERE a.trans_no = @trans_no
+            ORDER BY a.`time` DESC
             LIMIT 1
             ";
             Hashtable ht = new Hashtable();
