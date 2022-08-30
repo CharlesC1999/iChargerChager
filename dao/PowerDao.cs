@@ -197,7 +197,7 @@ namespace backend.dao
         {
             string sql = @$"
             SELECT
-            a.BIN_TO_UUID(id) as id,
+            BIN_TO_UUID(a.id) as id,
             a.charger_id,
             a.chargergun_id,
             TIME_TO_SEC(TIMEDIFF(NOW(), b.createat)) as charge_time,
