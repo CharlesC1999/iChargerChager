@@ -286,6 +286,8 @@ namespace backend.Controllers.Power
                 _service.UpdateChargerOrderStatus(TransNo, -1);
                 // 傳送訂單建立通知
                 await _service.PostNotification(TransNo, -1);
+                // 改變充電樁狀態
+                _service.UpdateChargerGunStatus(TransNo, 1);
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
