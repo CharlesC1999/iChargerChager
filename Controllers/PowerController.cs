@@ -321,6 +321,8 @@ namespace backend.Controllers.Power
                 await _service.PostNotification(TransNo, 2);
                 // 改變充電樁狀態
                 _service.UpdateChargerGunStatus(TransNo, 1);
+                // 付款
+                await _service.PostChargerOrderFee(TransNo);
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
@@ -387,6 +389,8 @@ namespace backend.Controllers.Power
                 await _service.PostNotification(model.TransNo, _AccountNumber, 2);
                 // 改變充電樁狀態
                 _service.UpdateChargerGunStatus(model.TransNo, 1);
+                // 付款
+                await _service.PostChargerOrderFee(model.TransNo);
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
