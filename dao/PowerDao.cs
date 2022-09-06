@@ -383,6 +383,7 @@ namespace backend.dao
                 car_id,
                 charger_id,
                 chargergun_id,
+                chargergun_fee,
                 status,
                 createid,
                 createat,
@@ -404,6 +405,19 @@ namespace backend.dao
                     chargergun_id
                     FROM `ChargerQRCode`
                     WHERE `key` = @key
+                    LIMIT 1
+                ),
+                (
+                    SELECT
+                    b.fee as chargergun_fee
+                    FROM (
+                        SELECT
+                        chargergun_id
+                        FROM `ChargerQRCode`
+                        WHERE `key` = @key
+                    ) a
+                    JOIN `ChargerGun` b
+                    ON a.chargergun_id = b.id
                     LIMIT 1
                 ),
                 0,
