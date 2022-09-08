@@ -189,7 +189,7 @@ namespace backend.Controllers.Power
             try
             {
                 // 啟動充電槍
-                await _service.PostChargerStart(model.Key, _AccountNumber);
+                // await _service.PostChargerStart(model.Key, _AccountNumber);
 
                 // 改變狀態為目前充電中
                 _service.UpdateChargerOrderStatus(OrderId, 1, _AccountNumber);
@@ -323,6 +323,8 @@ namespace backend.Controllers.Power
                 await _service.PostNotification(TransNo, 2);
                 // 改變充電樁狀態
                 _service.UpdateChargerGunStatus(TransNo, 1);
+                // 付款
+                await _service.PostChargerOrderFee(TransNo);
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
@@ -363,14 +365,14 @@ namespace backend.Controllers.Power
                 }
 
                 // 結束充電槍
-                await _service.PostChargerEnd(
-                    new ChargerPostModel
-                    {
-                        station_id = model.ChargerId,
-                        charger_id = model.ChargerGunId,
-                        trans_no = model.TransNo
-                    }
-                );
+                // await _service.PostChargerEnd(
+                //     new ChargerPostModel
+                //     {
+                //         station_id = model.ChargerId,
+                //         charger_id = model.ChargerGunId,
+                //         trans_no = model.TransNo
+                //     }
+                // );
                 
                 // 結束訂單
                 bool Result = _service.PostChargerOrderFinish(
@@ -389,6 +391,8 @@ namespace backend.Controllers.Power
                 await _service.PostNotification(model.TransNo, _AccountNumber, 2);
                 // 改變充電樁狀態
                 _service.UpdateChargerGunStatus(model.TransNo, 1);
+                // 付款
+                await _service.PostChargerOrderFee(model.TransNo);
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
