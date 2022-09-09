@@ -315,6 +315,30 @@ namespace backend.dao
             return Result;
         }
 
+        public OrderModel GetOrderById(int OrderId)
+        {
+            string sql = @$"
+            SELECT
+            id,
+            account,
+            car_id,
+            charger_id,
+            chargergun_id,
+            status,
+            createid,
+            createat,
+            updateid,
+            updateat
+            FROM `ChargerOrder`
+            WHERE id = @id
+            LIMIT 1
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@id", new SQLParameter(OrderId, MySqlDbType.Int16));
+            OrderModel Result = _myqlconn.GetDataList<OrderModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
+
         public void UpdateChargerGunStatus(int TransNo, int Status)
         {
             Hashtable ht = new Hashtable();

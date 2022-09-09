@@ -137,15 +137,21 @@ namespace backend.Services
             return Result;
         }
 
+        public OrderModel GetOrderById(int OrderId)
+        {
+            OrderModel Result = _PowerDao.GetOrderById(OrderId);
+            return Result;
+        }
+
         public void UpdateChargerGunStatus(int TransNo, int Status)
         {
             _PowerDao.UpdateChargerGunStatus(TransNo, Status);
         }
 
-        public async Task PostChargerOrderFee(int OrderId)
-        {
-            await this.PostChargerFee(OrderId);
-        }
+        // public async Task PostChargerOrderFee(int OrderId)
+        // {
+        //     await this.PostChargerFee(OrderId);
+        // }
 
         public void UpdateChargerGunStatus(string Key, int Status)
         {

@@ -364,6 +364,24 @@ namespace backend.Controllers.Power
                     });
                 }
 
+                var OrderData = _service.GetOrderById(model.TransNo);
+                if(OrderData is null) {
+                    return BadRequest(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "訂單錯誤",
+                        Result = null,
+                    });
+                }
+                if(OrderData.status == 2) {
+                    return BadRequest(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "訂單目前正在結單付款中，請稍候！",
+                        Result = null,
+                    });
+                }
+
                 // 結束充電槍
                 await _service.PostChargerEnd(
                     new ChargerPostModel
