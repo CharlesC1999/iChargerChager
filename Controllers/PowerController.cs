@@ -324,7 +324,8 @@ namespace backend.Controllers.Power
                 // 改變充電樁狀態
                 _service.UpdateChargerGunStatus(TransNo, 1);
                 // 付款
-                // await _service.PostChargerOrderFee(TransNo);
+                await _service.PostChargerOrderFee(TransNo);
+
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
@@ -391,26 +392,7 @@ namespace backend.Controllers.Power
                         trans_no = model.TransNo
                     }
                 );
-                
-                // 結束訂單
-                bool Result = _service.PostChargerOrderFinish(
-                    model
-                );
-                if (!Result)
-                {
-                    return BadRequest(new ResultViewModel<string>
-                    {
-                        isSuccess = false,
-                        message = "充電錯誤",
-                        Result = null,
-                    });
-                }
-                // 傳送訂單建立通知
-                await _service.PostNotification(model.TransNo, _AccountNumber, 2);
-                // 改變充電樁狀態
-                _service.UpdateChargerGunStatus(model.TransNo, 1);
-                // 付款
-                // await _service.PostChargerOrderFee(model.TransNo);
+
                 return Ok(new ResultViewModel<string>
                 {
                     isSuccess = true,
