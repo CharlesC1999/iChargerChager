@@ -195,7 +195,7 @@ namespace backend.Services
 
         public async Task PostChargerFee(int OrderId)
         {
-            var url = "http://192.168.1.84:13009/api/Pay";
+            var url = "http://192.168.1.84:13001/api/Pay";
             var client = _clientFactory.CreateClient();
             var body = new StringContent(
                 System.Text.Json.JsonSerializer.Serialize(new
