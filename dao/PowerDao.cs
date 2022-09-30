@@ -321,7 +321,7 @@ namespace backend.dao
             SELECT
             id,
             account,
-            car_id,
+            BIN_TO_UUID(car_id) as car_id,
             charger_id,
             chargergun_id,
             status,
