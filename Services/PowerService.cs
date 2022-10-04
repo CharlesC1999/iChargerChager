@@ -164,6 +164,7 @@ namespace backend.Services
             int OrderId = _PowerDao.PostChargerOrder(
                 model.PayId,
                 model.CarId,
+                model.ReceiveId,
                 model.Key,
                 Account
             );

@@ -398,13 +398,14 @@ namespace backend.dao
             return id;
         }
 
-        public int PostChargerOrder(string PayId, string CarId, string Key, string Account)
+        public int PostChargerOrder(string PayId, string CarId, string ReceiveId, string Key, string Account)
         {
             string sql = @$"
             INSERT INTO `ChargerOrder` (
                 account,
                 pay_id,
                 car_id,
+                receive_id,
                 charger_id,
                 chargergun_id,
                 chargergun_fee,
@@ -417,6 +418,7 @@ namespace backend.dao
                 @account,
                 UUID_TO_BIN(@pay_id),
                 UUID_TO_BIN(@car_id),
+                UUID_TO_BIN(@receive_id),
                 (
                     SELECT
                     charger_id
@@ -455,6 +457,7 @@ namespace backend.dao
             ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
             ht.Add("@car_id", new SQLParameter(CarId, MySqlDbType.VarChar));
             ht.Add("@pay_id", new SQLParameter(PayId, MySqlDbType.VarChar));
+            ht.Add("@receive_id", new SQLParameter(ReceiveId, MySqlDbType.VarChar));
             ht.Add("@key", new SQLParameter(Key, MySqlDbType.VarChar));
             int Id = _myqlconn.ExecuteReturnId(sql, ht);
             return Id;
