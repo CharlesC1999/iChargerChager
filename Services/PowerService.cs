@@ -148,11 +148,6 @@ namespace backend.Services
             _PowerDao.UpdateChargerGunStatus(TransNo, Status);
         }
 
-        public async Task PostChargerOrderFee(int OrderId)
-        {
-            await this.PostChargerFee(OrderId);
-        }
-
         public void UpdateChargerGunStatus(string Key, int Status)
         {
             _PowerDao.UpdateChargerGunStatus(Key, Status);
@@ -192,20 +187,6 @@ namespace backend.Services
             //     model.TransNo
             // );
             return true;
-        }
-
-        public async Task PostChargerFee(int OrderId)
-        {
-            var url = "http://192.168.1.84:13001/api/Pay";
-            var client = _clientFactory.CreateClient();
-            var body = new StringContent(
-                System.Text.Json.JsonSerializer.Serialize(new
-                {
-                    OrderId = OrderId
-                }),
-                Encoding.UTF8,
-                Application.Json);
-            var response = await client.PostAsync(url, body);
         }
 
         public async Task PostChargerEnd(ChargerPostModel Data)
