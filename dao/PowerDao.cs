@@ -683,5 +683,29 @@ namespace backend.dao
             PayViewModel Result = _myqlconn.GetDataList<PayViewModel>(sql, ht).FirstOrDefault();
             return Result;
         }
+
+        public ReceiveViewModel GetByReceiveId(string CardId, string Account)
+        {
+            string sql = @$"
+            SELECT
+            BIN_TO_UUID(id) as id,
+            account,
+            name,
+            type,
+            category,
+            receive_email,
+            receive_number,
+            receive_donate_number,
+            company_number,
+            company_name
+            FROM `Receive`
+            WHERE id = UUID_TO_BIN(@id) AND account = @account
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@id", new SQLParameter(CardId, MySqlDbType.VarChar));
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            ReceiveViewModel Result = _myqlconn.GetDataList<ReceiveViewModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
     }
 }

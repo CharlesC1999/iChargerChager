@@ -446,5 +446,11 @@ namespace backend.Services
             PayViewModel Result = _PowerDao.GetByCardId(CardId, Account);
             return Result;
         }
+
+        public ReceiveViewModel GetByReceiveId(string ReceiveId, string Account)
+        {
+            ReceiveViewModel Result = _PowerDao.GetByReceiveId(ReceiveId, Account);
+            return Result;
+        }
     }
 }

@@ -160,6 +160,18 @@ namespace backend.Controllers.Power
                     });
                 }
 
+                // 確認發票
+                var ReceiveData = _service.GetByReceiveId(model.ReceiveId, _AccountNumber);
+                if (ReceiveData is null)
+                {
+                    return NotFound(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "查無此發票",
+                        Result = null,
+                    });
+                }
+
                 // 建立訂單
                 OrderId = _service.PostChargerOrder(
                     model,
