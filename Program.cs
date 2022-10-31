@@ -21,11 +21,11 @@ namespace backend
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    //     webBuilder.UseKestrel(opts =>
-                    // {
-                    //     opts.ListenAnyIP(5001);
-                    //     // opts.ListenAnyIP(6000);
-                    // });
+                        webBuilder.UseKestrel(opts =>
+                    {
+                        opts.ListenAnyIP(5001);
+                        // opts.ListenAnyIP(6000);
+                    });
                 });
     }
 }

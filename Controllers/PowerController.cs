@@ -430,7 +430,7 @@ namespace backend.Controllers.Power
         /// </returns>
         [HttpPost]
         [Route("Reserve")]
-        public async Task<IActionResult> PostChargerReserve([FromBody] PowerPostModel model)
+        public async Task<IActionResult> PostChargerReserve([FromBody] PowerReservePostModel model)
         {
             int OrderId = 0;
             try
@@ -446,13 +446,25 @@ namespace backend.Controllers.Power
                 }
 
                 // 確認是否有訂單
-                var OrderData = _service.GetOrderByKey(model.Key);
+                var OrderData = _service.GetOrderByGunId(model.ChargerGunId);
                 if (OrderData is not null)
                 {
                     return BadRequest(new ResultViewModel<string>
                     {
                         isSuccess = false,
                         message = "該充電槍目前已有訂單",
+                        Result = null,
+                    });
+                }
+
+                // 確認槍是否被預約
+                var GunData = _service.GetGunById(model.ChargerGunId);
+                if (GunData.status == 3)
+                {
+                    return BadRequest(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "該充電槍目前已被預約",
                         Result = null,
                     });
                 }

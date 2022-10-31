@@ -137,6 +137,18 @@ namespace backend.Services
             return Result;
         }
 
+        public ChargerGunModel GetGunById(string GunId)
+        {
+            ChargerGunModel Result = _PowerDao.GetGunById(GunId);
+            return Result;
+        }
+
+        public OrderModel GetOrderByGunId(string GunId)
+        {
+            OrderModel Result = _PowerDao.GetOrderByGunId(GunId);
+            return Result;
+        }
+
         public OrderModel GetOrderById(int OrderId)
         {
             OrderModel Result = _PowerDao.GetOrderById(OrderId);
@@ -254,14 +266,14 @@ namespace backend.Services
             }
         }
 
-        public int PostChargerReserve(PowerPostModel model, string Account)
+        public int PostChargerReserve(PowerReservePostModel model, string Account)
         {
             // 新增訂單
             int OrderId = _PowerDao.PostChargerReserve(
                 model.PayId,
                 model.CarId,
                 model.ReceiveId,
-                model.Key,
+                model.ChargerGunId,
                 Account
             );
             return OrderId;
