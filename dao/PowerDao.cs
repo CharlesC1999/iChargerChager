@@ -603,7 +603,7 @@ namespace backend.dao
             INSERT INTO `ChargerReserve` (
                 account,
                 reserve_start,
-                recerve_end,
+                reserve_end,
                 pay_id,
                 receive_id,
                 car_id,

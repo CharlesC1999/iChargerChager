@@ -18,6 +18,6 @@ namespace backend.Models.Power
         public int status { get; set; }
         public int pay_status { get; set; }
         public DateTime reserve_start { get; set; }
-        public DateTime recerve_end { get; set; }
+        public DateTime reserve_end { get; set; }
     }
 }

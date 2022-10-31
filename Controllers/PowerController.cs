@@ -584,7 +584,7 @@ namespace backend.Controllers.Power
                 }
 
                 // 結束訂單
-                _service.PostChargerReserveFinish(model.OrderId, OrderData.reserve_start, OrderData.recerve_end);
+                _service.PostChargerReserveFinish(model.OrderId, OrderData.reserve_start, OrderData.reserve_end);
 
                 return Ok(new ResultViewModel<string>
                 {
