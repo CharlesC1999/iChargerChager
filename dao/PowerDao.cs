@@ -386,7 +386,7 @@ namespace backend.dao
                 updateid,
                 updateat
                 FROM `ChargerOrder`
-                WHERE status IN (0, 1) AND chargergun_id = UUID_TO_BIN(@chargergun_id)
+                WHERE status IN (0, 1) AND chargergun_id = @chargergun_id
                 LIMIT 1
             ) a
             JOIN `Car` b
