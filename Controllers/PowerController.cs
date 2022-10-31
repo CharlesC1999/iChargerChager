@@ -376,7 +376,8 @@ namespace backend.Controllers.Power
                 }
 
                 var OrderData = _service.GetOrderById(model.TransNo);
-                if(OrderData is null) {
+                if (OrderData is null)
+                {
                     return BadRequest(new ResultViewModel<string>
                     {
                         isSuccess = false,
@@ -384,7 +385,8 @@ namespace backend.Controllers.Power
                         Result = null,
                     });
                 }
-                if(OrderData.status == 2) {
+                if (OrderData.status == 2)
+                {
                     return BadRequest(new ResultViewModel<string>
                     {
                         isSuccess = false,
@@ -416,6 +418,175 @@ namespace backend.Controllers.Power
                 {
                     isSuccess = false,
                     message = "結束充電失敗",
+                    Result = null,
+                });
+            }
+        }
+
+        /// <summary>
+        /// 使用者開始預約
+        /// </summary>
+        /// <returns>
+        /// </returns>
+        [HttpPost]
+        [Route("Reserve")]
+        public async Task<IActionResult> PostChargerReserve([FromBody] PowerPostModel model)
+        {
+            int OrderId = 0;
+            try
+            {
+                if (this._AccountNumber == "")
+                {
+                    return Unauthorized(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "登入期限已過期，請重新登入！",
+                        Result = null,
+                    });
+                }
+
+                // 確認是否有訂單
+                var OrderData = _service.GetOrderByKey(model.Key);
+                if (OrderData is not null)
+                {
+                    return BadRequest(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "該充電槍目前已有訂單",
+                        Result = null,
+                    });
+                }
+
+                // 確認車號
+                var CarData = _service.GetByCarId(model.CarId);
+                if (CarData is null)
+                {
+                    return NotFound(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "查無此車號",
+                        Result = null,
+                    });
+                }
+
+                // 確認卡片
+                var CardData = _service.GetByCardId(model.PayId, _AccountNumber);
+                if (CardData is null)
+                {
+                    return NotFound(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "查無此卡片",
+                        Result = null,
+                    });
+                }
+
+                // 確認發票
+                var ReceiveData = _service.GetByReceiveId(model.ReceiveId, _AccountNumber);
+                if (ReceiveData is null)
+                {
+                    return NotFound(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "查無此發票",
+                        Result = null,
+                    });
+                }
+
+                // 建立預約訂單
+                OrderId = _service.PostChargerReserve(
+                    model,
+                    _AccountNumber
+                );
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new ResultViewModel<string>
+                {
+                    isSuccess = false,
+                    message = e.Message.ToString(),
+                    Result = null,
+                });
+            }
+
+            try
+            {
+                // 傳送訂單建立通知
+                await _service.PostReserveNotification(OrderId, _AccountNumber, 0);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Notification Error: 'OrderId = {OrderId}, Account = {_AccountNumber}, Message = {e}'");
+            }
+
+            return Ok(new ResultViewModel<object>
+            {
+                isSuccess = true,
+                message = "充電槍預約成功",
+                Result = new
+                {
+                    OrderId = OrderId,
+                },
+            });
+        }
+
+        /// <summary>
+        /// 使用者預約結單
+        /// </summary>
+        /// <returns>
+        /// </returns>
+        [HttpPost]
+        [Route("Reserve/Finish")]
+        public async Task<IActionResult> PostChargerReserveFinish([FromBody] PowerFinishReservePostModel model)
+        {
+            try
+            {
+                if (this._AccountNumber == "")
+                {
+                    return Unauthorized(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "登入期限已過期，請重新登入！",
+                        Result = null,
+                    });
+                }
+
+                var OrderData = _service.GetReserveOrderById(model.OrderId);
+                if (OrderData is null)
+                {
+                    return BadRequest(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "訂單錯誤",
+                        Result = null,
+                    });
+                }
+                if (OrderData.status == 1)
+                {
+                    return BadRequest(new ResultViewModel<string>
+                    {
+                        isSuccess = false,
+                        message = "預約訂單目前正在結單付款中，請稍候！",
+                        Result = null,
+                    });
+                }
+
+                // 結束訂單
+                _service.PostChargerReserveFinish(model.OrderId, OrderData.reserve_start, OrderData.recerve_end);
+
+                return Ok(new ResultViewModel<string>
+                {
+                    isSuccess = true,
+                    message = "結束預約成功",
+                    Result = null,
+                });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new ResultViewModel<string>
+                {
+                    isSuccess = false,
+                    message = "結束預約失敗",
                     Result = null,
                 });
             }

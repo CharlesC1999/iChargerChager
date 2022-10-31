@@ -193,6 +193,33 @@ namespace backend.dao
             return Result;
         }
 
+        public ReserveOrderModel GetReserveOrderNow(string Account)
+        {
+            string sql = @$"
+            SELECT
+            id,
+			account,
+            reserve_start,
+            reserve_end,
+			BIN_TO_UUID(pay_id) as pay_id,
+			BIN_TO_UUID(receive_id) as receive_id,
+			BIN_TO_UUID(car_id) as car_id,
+            REPLACE(charger_id, '\0', '') as charger_id,
+            REPLACE(chargergun_id, '\0', '') as chargergun_id,
+            price,
+            pay_status,
+            status
+            FROM `ChargerReserve`
+            WHERE account = @account
+            ORDER BY id DESC
+            LIMIT 1
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            ReserveOrderModel Result = _myqlconn.GetDataList<ReserveOrderModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
+
         public ChargerInfoModel GetChargerOrderNowInfo(int TransNo, string Account)
         {
             string sql = @$"
@@ -339,6 +366,30 @@ namespace backend.dao
             return Result;
         }
 
+        public ReserveOrderModel GetReserveOrderById(int OrderId)
+        {
+            string sql = @$"
+            SELECT
+            id,
+            account,
+            reserve_start,
+            reserve_end,
+            BIN_TO_UUID(car_id) as car_id,
+            charger_id,
+            chargergun_id,
+            price,
+            pay_status,
+            status
+            FROM `ChargerOrder`
+            WHERE id = @id
+            LIMIT 1
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@id", new SQLParameter(OrderId, MySqlDbType.Int16));
+            ReserveOrderModel Result = _myqlconn.GetDataList<ReserveOrderModel>(sql, ht).FirstOrDefault();
+            return Result;
+        }
+
         public void UpdateChargerGunStatus(int TransNo, int Status)
         {
             Hashtable ht = new Hashtable();
@@ -461,6 +512,70 @@ namespace backend.dao
             ht.Add("@key", new SQLParameter(Key, MySqlDbType.VarChar));
             int Id = _myqlconn.ExecuteReturnId(sql, ht);
             return Id;
+        }
+
+        public int PostChargerReserve(string PayId, string CarId, string ReceiveId, string Key, string Account)
+        {
+            string sql = @$"
+            INSERT INTO `ChargerReserve` (
+                account,
+                reserve_start,
+                recerve_end,
+                pay_id,
+                receive_id,
+                car_id,
+                charger_id,
+                chargergun_id,
+                price,
+                pay_status,
+                status
+            ) VALUES (
+                @account,
+                NOW(),
+                null,
+                UUID_TO_BIN(@pay_id),
+                UUID_TO_BIN(@receive_id),
+                UUID_TO_BIN(@car_id),
+                (
+                    SELECT
+                    charger_id
+                    FROM `ChargerQRCode`
+                    WHERE `key` = @key
+                    LIMIT 1
+                ),
+                (
+                    SELECT
+                    chargergun_id
+                    FROM `ChargerQRCode`
+                    WHERE `key` = @key
+                    LIMIT 1
+                ),
+                null,
+                0,
+                0
+            );
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@account", new SQLParameter(Account, MySqlDbType.VarChar));
+            ht.Add("@car_id", new SQLParameter(CarId, MySqlDbType.VarChar));
+            ht.Add("@pay_id", new SQLParameter(PayId, MySqlDbType.VarChar));
+            ht.Add("@receive_id", new SQLParameter(ReceiveId, MySqlDbType.VarChar));
+            ht.Add("@key", new SQLParameter(Key, MySqlDbType.VarChar));
+            int Id = _myqlconn.ExecuteReturnId(sql, ht);
+            return Id;
+        }
+
+        public void PostChargerReserveFinish(int OrderId, int Minutes)
+        {
+            string sql = @$"
+            UPDATE `ChargerReserve`
+            SET status = 1, price = ( SELECT fee FROM `ChargerReserveFee` LIMIT 1 ) * @minute
+            WHERE id = @id
+            ";
+            Hashtable ht = new Hashtable();
+            ht.Add("@id", new SQLParameter(OrderId, MySqlDbType.Int32));
+            ht.Add("@minute", new SQLParameter(Minutes, MySqlDbType.Int32));
+            _myqlconn.Execute(sql, ht);
         }
 
         public void PostChargerInfo(string Key, int TransNo)

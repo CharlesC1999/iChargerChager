@@ -143,6 +143,12 @@ namespace backend.Services
             return Result;
         }
 
+        public ReserveOrderModel GetReserveOrderById(int OrderId)
+        {
+            ReserveOrderModel Result = _PowerDao.GetReserveOrderById(OrderId);
+            return Result;
+        }
+
         public void UpdateChargerGunStatus(int TransNo, int Status)
         {
             _PowerDao.UpdateChargerGunStatus(TransNo, Status);
@@ -246,6 +252,30 @@ namespace backend.Services
             {
                 throw new Exception("無法啟動充電槍");
             }
+        }
+
+        public int PostChargerReserve(PowerPostModel model, string Account)
+        {
+            // 新增訂單
+            int OrderId = _PowerDao.PostChargerReserve(
+                model.PayId,
+                model.CarId,
+                model.ReceiveId,
+                model.Key,
+                Account
+            );
+            return OrderId;
+        }
+
+        public bool PostChargerReserveFinish(int OrderId, DateTime StartTime, DateTime EndTime)
+        {
+            var Minutes = 0;
+            var Temp = (EndTime - StartTime).TotalMinutes;
+            Minutes += (int)Temp;
+
+            // 結束訂單
+            _PowerDao.PostChargerReserveFinish(OrderId, Minutes);
+            return true;
         }
 
         public async Task PostCancelNotification(string Account)
@@ -417,6 +447,65 @@ namespace backend.Services
                 {
                     throw new Exception("傳送失敗");
                 }
+            }
+        }
+
+        public async Task PostReserveNotification(int OrderId, string Account, int Status)
+        {
+            ReserveOrderModel Data = _PowerDao.GetReserveOrderNow(Account);
+            if (Data is null) throw new Exception("查無此訂單");
+            if (Data.account != Account) throw new Exception("查無此訂單");
+            if (Data.id != OrderId) throw new Exception("查無此訂單");
+            if (Data.status != Status) throw new Exception("訂單狀態錯誤");
+
+            // 取得手機Token
+            List<MemberNotifyModel> NotifyData = _PowerDao.GetNotifyTokenByAccount(Account);
+
+            foreach (var item in NotifyData)
+            {
+                var url = "https://fcm.googleapis.com/fcm/send";
+                var client = _clientFactory.CreateClient();
+                string authValue = "AAAAudnf1KU:APA91bHYDceYngjMAbf32Tkgecv3uKWfHy7FiQ7QToLSPbDwli3gT1YC0rakLAAA4vJ8KJzdsiotNk7y8Nh25rSTXRZsBwCcgBDuDI4TqcorIpEbpPFihQgU1swucQrlY7AuKyR7cwA5";
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("key", "=" + authValue);
+
+                var body = new StringContent(
+                    System.Text.Json.JsonSerializer.Serialize(
+                        Status == 0 ?
+                        new
+                        {
+                            to = item.token,
+                            notification = new
+                            {
+                                title = "開始預約",
+                                body = @$"您的預約已成功，目前可直接入場充電，若有充電問題歡迎來電客服：0800-868-885，我們將為您服務"
+                            }
+                        } : Status == 1 ? new
+                        {
+                            to = item.token,
+                            notification = new
+                            {
+                                title = "結束預約",
+                                body = @$"您的預約已經結束，本次預約預估時間為「{(DateTime.Now - Convert.ToDateTime(Data.reserve_start)).Minutes} 分鐘」，詳細訂單資訊請至「預估記錄查詢」功能瀏覽，感謝您本次的使用，若有充電問題歡迎來電客服：0800-868-885，我們將為您服務"
+                            }
+                        } : new
+                        {
+                            to = item.token,
+                            notification = new
+                            {
+                                title = "預約異常",
+                                body = @$"您的預約目前發生異常，因此系統已幫您自動取消或結束訂單，很抱歉造成您本次的困擾，若發生異常等相關問題時歡迎來電客服：0800-868-885，我們將為您盡快解決問題"
+                            }
+                        }),
+                    Encoding.UTF8,
+                    Application.Json);
+                var response = await client.PostAsync(url, body);
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseStream = await response.Content.ReadAsStringAsync();
+                    var responseObject = System.Text.Json.JsonSerializer.Deserialize<ChargerResponseViewModel>(responseStream);
+                }
+                else
+                { }
             }
         }
 
