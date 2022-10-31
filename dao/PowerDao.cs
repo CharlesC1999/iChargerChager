@@ -647,7 +647,7 @@ namespace backend.dao
         {
             string sql = @$"
             UPDATE `ChargerReserve`
-            SET status = 1, price = ( SELECT fee FROM `ChargerReserveFee` LIMIT 1 ) * @minute
+            SET status = 1, price = ( SELECT reserve_fee FROM `ChargerGun` WHERE id = ( SELECT chargergun_id FROM `ChargerReserve` WHERE id = @id LIMIT 1 ) LIMIT 1 ) * @minute
             WHERE id = @id;
             UPDATE `ChargerGun` SET status = 1 WHERE `id` = ( SELECT chargergun_id FROM `ChargerReserve` WHERE id = @id LIMIT 1 );
             ";
