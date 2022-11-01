@@ -279,6 +279,13 @@ namespace backend.Services
             return OrderId;
         }
 
+        public bool PostChargerReserveEnd(int OrderId)
+        {
+            // 結束訂單
+            _PowerDao.PostChargerReserveEnd(OrderId);
+            return true;
+        }
+
         public bool PostChargerReserveFinish(int OrderId, DateTime StartTime, DateTime EndTime)
         {
             var Minutes = 0;

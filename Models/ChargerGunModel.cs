@@ -10,6 +10,7 @@ namespace backend.Models.Power
         public string id { get; set; }
         public string name { get; set; }
         public string address { get; set; }
+        public int reserve_fee { get; set; }
         public int status { get; set; }
     }
 }

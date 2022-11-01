@@ -463,7 +463,7 @@ namespace backend.dao
             price,
             pay_status,
             status
-            FROM `ChargerOrder`
+            FROM `ChargerReserve`
             WHERE id = @id
             LIMIT 1
             ";
@@ -643,17 +643,35 @@ namespace backend.dao
             return Id;
         }
 
-        public void PostChargerReserveFinish(int OrderId, int Minutes)
+        public void PostChargerReserveEnd(int OrderId)
         {
             string sql = @$"
             UPDATE `ChargerReserve`
-            SET status = 1, price = ( SELECT reserve_fee FROM `ChargerGun` WHERE id = ( SELECT chargergun_id FROM `ChargerReserve` WHERE id = @id LIMIT 1 ) LIMIT 1 ) * @minute
+            SET reserve_end = NOW()
             WHERE id = @id;
-            UPDATE `ChargerGun` SET status = 1 WHERE `id` = ( SELECT chargergun_id FROM `ChargerReserve` WHERE id = @id LIMIT 1 );
             ";
             Hashtable ht = new Hashtable();
             ht.Add("@id", new SQLParameter(OrderId, MySqlDbType.Int32));
-            ht.Add("@minute", new SQLParameter(Minutes, MySqlDbType.Int32));
+            _myqlconn.Execute(sql, ht);
+        }
+
+        public void PostChargerReserveFinish(int OrderId, int Minutes)
+        {
+            Hashtable ht = new Hashtable();
+            ht.Add("@id", new SQLParameter(OrderId, MySqlDbType.Int32));
+
+            string sql = @$"
+            SELECT reserve_fee FROM `ChargerGun` WHERE id = ( SELECT chargergun_id FROM `ChargerReserve` WHERE id = @id LIMIT 1 ) LIMIT 1;
+            ";
+            ChargerGunModel gun = _myqlconn.GetDataList<ChargerGunModel>(sql, ht).FirstOrDefault();
+            if(gun is null) throw new Exception("費用錯誤");
+
+            sql = @$"
+            UPDATE `ChargerReserve`
+                        SET status = 1, price = @price
+                        WHERE id = @id;
+                        UPDATE `ChargerGun` SET status = 1 WHERE `id` = ( SELECT chargergun_id FROM `ChargerReserve` WHERE id = @id LIMIT 1 );";
+            ht.Add("@price", new SQLParameter(Minutes * gun.reserve_fee, MySqlDbType.Int32));
             _myqlconn.Execute(sql, ht);
         }
 

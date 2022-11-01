@@ -549,7 +549,7 @@ namespace backend.Controllers.Power
         /// </returns>
         [HttpPost]
         [Route("Reserve/Finish")]
-        public async Task<IActionResult> PostChargerReserveFinish([FromBody] PowerFinishReservePostModel model)
+        public IActionResult PostChargerReserveFinish([FromBody] PowerFinishReservePostModel model)
         {
             try
             {
@@ -584,7 +584,10 @@ namespace backend.Controllers.Power
                 }
 
                 // 結束訂單
-                _service.PostChargerReserveFinish(model.OrderId, OrderData.reserve_start, OrderData.reserve_end);
+                _service.PostChargerReserveEnd(model.OrderId);
+                
+                var OrderData2 = _service.GetReserveOrderById(model.OrderId);
+                _service.PostChargerReserveFinish(model.OrderId, OrderData2.reserve_start, OrderData2.reserve_end);
 
                 return Ok(new ResultViewModel<string>
                 {
