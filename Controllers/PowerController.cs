@@ -549,7 +549,7 @@ namespace backend.Controllers.Power
         /// </returns>
         [HttpPost]
         [Route("Reserve/Finish")]
-        public IActionResult PostChargerReserveFinish([FromBody] PowerFinishReservePostModel model)
+        public async Task<IActionResult> PostChargerReserveFinish([FromBody] PowerFinishReservePostModel model)
         {
             try
             {
@@ -585,9 +585,13 @@ namespace backend.Controllers.Power
 
                 // 結束訂單
                 _service.PostChargerReserveEnd(model.OrderId);
-                
+
+                // 計算費用
                 var OrderData2 = _service.GetReserveOrderById(model.OrderId);
                 _service.PostChargerReserveFinish(model.OrderId, OrderData2.reserve_start, OrderData2.reserve_end);
+
+                // 付款
+                await _service.PostReserveOrderFee(model.OrderId);
 
                 return Ok(new ResultViewModel<string>
                 {

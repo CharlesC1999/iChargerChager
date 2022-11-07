@@ -560,5 +560,24 @@ namespace backend.Services
             ReceiveViewModel Result = _PowerDao.GetByReceiveId(ReceiveId, Account);
             return Result;
         }
+
+        public async Task PostReserveOrderFee(int OrderId)
+        {
+            await this.PostReserveFee(OrderId);
+        }
+
+        public async Task PostReserveFee(int OrderId)
+        {
+            var url = "http://192.168.1.164:13010/api/Pay/Reserve";
+            var client = _clientFactory.CreateClient();
+            var body = new StringContent(
+                System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    OrderId = OrderId
+                }),
+                Encoding.UTF8,
+                Application.Json);
+            var response = await client.PostAsync(url, body);
+        }
     }
 }

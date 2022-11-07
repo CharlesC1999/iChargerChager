@@ -611,7 +611,11 @@ namespace backend.dao
                 chargergun_id,
                 price,
                 pay_status,
-                status
+                status,
+                createid,
+                createat,
+                updateid,
+                updateat
             ) VALUES (
                 @account,
                 NOW(),
@@ -629,7 +633,11 @@ namespace backend.dao
                 @chargergun_id,
                 null,
                 0,
-                0
+                0,
+                @account,
+                NOW(),
+                @account,
+                NOW()
             );
             UPDATE `ChargerGun` SET status = 3 WHERE `id` = @chargergun_id;
             ";
