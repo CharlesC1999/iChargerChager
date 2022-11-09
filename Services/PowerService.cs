@@ -181,6 +181,7 @@ namespace backend.Services
                 model.Key,
                 Account
             );
+
             //初始化資料
             _PowerDao.PostChargerInfo(
                 model.Key,
